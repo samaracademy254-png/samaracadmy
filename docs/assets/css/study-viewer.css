@@ -1,0 +1,128 @@
+/* study-viewer.css - أنماط محرك عرض الدروس */
+.study-viewer {
+    padding: var(--spacing-lg) 0;
+    background: var(--color-bg-light);
+}
+
+.study-viewer__container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* الدرس */
+.lesson {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.lesson__header {
+    padding: var(--spacing-lg);
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.lesson__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    margin-bottom: var(--spacing-sm);
+}
+
+.lesson__meta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+.lesson__video {
+    padding: var(--spacing-md);
+    background: var(--color-gray-100);
+}
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* نسبة 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.lesson__body,
+.lesson__objectives,
+.lesson__examples,
+.lesson__summary,
+.lesson__quick-questions {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.lesson__body h2,
+.lesson__objectives h2,
+.lesson__examples h2,
+.lesson__summary h2,
+.lesson__quick-questions h2 {
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+.lesson__text {
+    line-height: 1.8;
+    font-size: var(--font-size-md);
+}
+
+.lesson__navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: var(--color-gray-50);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* أنماط الأمثلة */
+.example-item {
+    background: var(--color-gray-50);
+    border-right: 4px solid var(--color-gold);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-sm);
+}
+
+/* أنماط الأسئلة السريعة */
+.quick-question {
+    background: var(--color-gray-50);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.quick-question:hover {
+    background: var(--color-gray-100);
+}
+
+.quick-question .answer {
+    display: none;
+    margin-top: var(--spacing-sm);
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.quick-question.active .answer {
+    display: block;
+}

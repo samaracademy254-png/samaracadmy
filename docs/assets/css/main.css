@@ -1,0 +1,108 @@
+/* ============================================================
+   main.css - يستورد جميع ملفات التصميم
+   ============================================================ */
+
+/* 1. نظام التصميم */
+@import url('variables.css');
+
+/* 2. إعادة التعيين */
+@import url('reset.css');
+
+/* ===== فئات مساعدة عامة ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.text-center { text-align: center; }
+.text-gold { color: var(--gold); }
+.text-primary { color: var(--primary); }
+.text-gray { color: var(--gray-500); }
+
+.bg-primary { background: var(--primary); }
+.bg-gold { background: var(--gold); }
+
+/* ===== أزرار عامة ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 30px;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-primary);
+  text-decoration: none;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-gold {
+  background: var(--gold-gradient);
+  color: #78350F;
+}
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--gray-300);
+  color: var(--gray-700);
+}
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-sm {
+  padding: 6px 16px;
+  font-size: var(--text-sm);
+}
+
+.btn-lg {
+  padding: 16px 40px;
+  font-size: var(--text-lg);
+}
+
+/* ===== بطاقات عامة ===== */
+.card {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  padding: 24px;
+  transition: var(--transition);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(30px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease forwards;
+}

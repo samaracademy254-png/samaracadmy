@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>أكاديمية الأستاذ - الاختبارات التفاعلية</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../../assets/css/main.css" />
+    <link rel="stylesheet" href="../../assets/css/components/quiz-engine.css" />
+
+    <meta property="og:title" content="أكاديمية الأستاذ - الاختبارات التفاعلية" />
+    <meta property="og:type" content="website" />
+    <meta name="description" content="اختبر معلوماتك في المناهج السعودية بشكل تفاعلي" />
+</head>
+<body>
+
+    <!-- ============================================ -->
+    <!-- 1. شريط التنقل العلوي (Navbar)                -->
+    <!-- ============================================ -->
+    <header class="navbar" role="navigation" aria-label="شريط التنقل الرئيسي">
+        <div class="navbar__container">
+            <a href="../../index.html" class="navbar__brand" aria-label="الرئيسية">
+                <span class="navbar__logo">🇸🇦</span>
+                <span class="navbar__title">أكاديمية الأستاذ</span>
+            </a>
+            <button class="navbar__toggle" id="navbarToggle" aria-expanded="false" aria-controls="navbarMenu">
+                <span class="navbar__hamburger"></span>
+            </button>
+            <ul class="navbar__menu" id="navbarMenu" role="menubar">
+                <li role="none"><a href="../../index.html" role="menuitem">🏠 الرئيسية</a></li>
+                <li role="none"><a href="../Study/" role="menuitem">📖 الدروس</a></li>
+                <li role="none"><a href="../Quiz/" role="menuitem" class="active">📝 الاختبارات</a></li>
+                <li role="none"><a href="../About/" role="menuitem">ℹ️ عن الأكاديمية</a></li>
+                <li role="none"><a href="../Contact/" role="menuitem">📞 تواصل معنا</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- ============================================ -->
+    <!-- 2. محرك الاختبارات                          -->
+    <!-- ============================================ -->
+    <main class="quiz-engine" id="quizEngine" role="main">
+        <div class="quiz-engine__container">
+
+            <!-- مسار التنقل -->
+            <nav class="breadcrumb" aria-label="مسار الصفحة">
+                <ol class="breadcrumb__list">
+                    <li><a href="../../index.html">الرئيسية</a></li>
+                    <li><a href="../Quiz/">الاختبارات</a></li>
+                    <li class="breadcrumb__current" id="breadcrumbCurrent">الصف الخامس - العلوم</li>
+                </ol>
+            </nav>
+
+            <!-- شريط التقدم والإحصائيات -->
+            <div class="quiz-stats" id="quizStats">
+                <div class="quiz-stats__item">
+                    <span class="quiz-stats__label">📋 السؤال</span>
+                    <span class="quiz-stats__value" id="statCurrent">0</span>
+                    <span>/</span>
+                    <span id="statTotal">0</span>
+                </div>
+                <div class="quiz-stats__item">
+                    <span class="quiz-stats__label">⭐ النقاط</span>
+                    <span class="quiz-stats__value" id="statScore">0</span>
+                </div>
+                <div class="quiz-stats__item">
+                    <span class="quiz-stats__label">✅ صحيح</span>
+                    <span class="quiz-stats__value" id="statCorrect">0</span>
+                </div>
+                <div class="quiz-stats__item">
+                    <span class="quiz-stats__label">❌ خطأ</span>
+                    <span class="quiz-stats__value" id="statWrong">0</span>
+                </div>
+                <div class="quiz-stats__progress">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">
+                        <div class="progress-bar__fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- حاوية السؤال -->
+            <div class="question-container" id="questionContainer">
+                <div class="question__loader" id="questionLoader">
+                    <div class="loader"></div>
+                    <p>جاري تحميل الاختبار...</p>
+                </div>
+                <div class="question__content" id="questionContent" style="display: none;">
+                    <!-- سيتم حقن السؤال الحالي عبر JavaScript -->
+                </div>
+            </div>
+
+            <!-- رسائل التغذية الراجعة -->
+            <div class="feedback-container" id="feedbackContainer" aria-live="polite"></div>
+
+            <!-- أزرار التحكم -->
+            <div class="quiz-controls">
+                <button class="btn btn--secondary" id="restartQuizBtn" aria-label="إعادة الاختبار">
+                    🔄 إعادة الاختبار
+                </button>
+                <button class="btn btn--primary" id="nextQuestionBtn" aria-label="السؤال التالي" style="display: none;">
+                    السؤال التالي ➡️
+                </button>
+                <button class="btn btn--danger" id="resetProgressBtn" aria-label="حذف التقدم المحفوظ">
+                    🗑️ حذف التقدم
+                </button>
+            </div>
+
+            <!-- رسائل الأخطاء -->
+            <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+        </div>
+    </main>
+
+    <!-- ============================================ -->
+    <!-- 3. تذييل الصفحة (Footer)                    -->
+    <!-- ============================================ -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer__container">
+            <p class="footer__copyright">© 2026 <strong>أكاديمية الأستاذ</strong> - بالعلم والإيمان ترقى الأمم 🇸🇦</p>
+            <div class="footer__social">
+                <a href="#" aria-label="واتساب">📱</a>
+                <a href="#" aria-label="تيليجرام">✈️</a>
+                <a href="#" aria-label="فيسبوك">📘</a>
+                <a href="#" aria-label="البريد الإلكتروني">✉️</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================ -->
+    <!-- 4. JavaScript (ES Modules)                  -->
+    <!-- ============================================ -->
+    <script type="module">
+        import { globalEventBus } from '../../assets/js/core/event-bus.js';
+        import { ErrorHandler } from '../../assets/js/core/errors.js';
+        import { QuizEngine } from '../../assets/js/engines/quiz-engine.js';
+        import { StorageManager } from '../../assets/js/core/storage.js';
+        import { RenderEngine } from '../../assets/js/engines/render-engine.js';
+
+        (async function initQuizPage() {
+            try {
+                // 1. قراءة معاملات الرابط
+                const urlParams = new URLSearchParams(window.location.search);
+                const gradeId = urlParams.get('grade') || 'p5';
+                const subjectId = urlParams.get('subject') || 'science';
+
+                // 2. تحديث مسار التنقل
+                const breadcrumb = document.getElementById('breadcrumbCurrent');
+                if (breadcrumb) {
+                    breadcrumb.textContent = `الصف ${gradeId} - ${subjectId}`;
+                }
+
+                // 3. تحميل بيانات الاختبار
+                const quizData = await QuizEngine.loadQuiz(gradeId, subjectId);
+
+                if (!quizData || !quizData.questions || quizData.questions.length === 0) {
+                    throw new Error('لا توجد أسئلة متاحة لهذا الاختبار حالياً.');
+                }
+
+                // 4. تهيئة المحرك
+                QuizEngine.init({
+                    grade: gradeId,
+                    subject: subjectId,
+                    questions: quizData.questions,
+                    shuffle: quizData.shuffle || false,
+                    container: document.getElementById('questionContent'),
+                    stats: {
+                        current: document.getElementById('statCurrent'),
+                        total: document.getElementById('statTotal'),
+                        score: document.getElementById('statScore'),
+                        correct: document.getElementById('statCorrect'),
+                        wrong: document.getElementById('statWrong'),
+                        progress: document.getElementById('progressFill'),
+                        progressBar: document.getElementById('progressBar'),
+                    },
+                    feedback: document.getElementById('feedbackContainer'),
+                    nextButton: document.getElementById('nextQuestionBtn'),
+                    restartButton: document.getElementById('restartQuizBtn'),
+                    resetProgressButton: document.getElementById('resetProgressBtn'),
+                    loader: document.getElementById('questionLoader'),
+                });
+
+                // 5. استعادة التقدم المحفوظ (إن وجد)
+                const savedProgress = StorageManager.get('quizProgress');
+                if (savedProgress && savedProgress.grade === gradeId && savedProgress.subject === subjectId) {
+                    QuizEngine.restoreProgress(savedProgress);
+                }
+
+                // 6. عرض السؤال الأول
+                QuizEngine.renderCurrentQuestion();
+
+                // 7. إخفاء الـ Loader
+                document.getElementById('questionLoader').style.display = 'none';
+                document.getElementById('questionContent').style.display = 'block';
+
+                // 8. بث حدث بدء الاختبار
+                globalEventBus.publish('quiz:started', {
+                    grade: gradeId,
+                    subject: subjectId,
+                    totalQuestions: quizData.questions.length,
+                });
+
+            } catch (error) {
+                ErrorHandler.handle(error);
+                const container = document.getElementById('questionContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <h3>⚠️ عذراً، حدث خطأ</h3>
+                            <p>${error.message || 'تعذر تحميل الاختبار. يرجى المحاولة مرة أخرى.'}</p>
+                            <a href="../../index.html" class="btn btn--primary">🏠 العودة للرئيسية</a>
+                        </div>
+                    `;
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

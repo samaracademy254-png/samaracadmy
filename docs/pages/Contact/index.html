@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التواصل وحجز الدروس - سمر أكاديمي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #0A4D8C;
+            --primary-light: #D4E6F1;
+            --gold: #F4A261;
+            --gray: #64748B;
+            --white: #FFFFFF;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #E8F0E8;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            color: var(--primary);
+            font-weight: 900;
+            font-size: 1.8rem;
+        }
+        .header .subtitle {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .contact-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            transition: .2s;
+            text-decoration: none;
+            color: #1a2e1a;
+        }
+        .contact-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        .contact-card .icon { font-size: 2rem; margin-bottom: 8px; }
+        .contact-card .label { font-weight: 700; font-size: 0.9rem; }
+        .contact-card .value { font-size: 0.85rem; color: var(--gray); }
+
+        .booking-form {
+            background: var(--primary-light);
+            padding: 25px;
+            border-radius: 16px;
+            border-right: 5px solid var(--primary);
+            margin-top: 20px;
+        }
+        .booking-form h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1a2e1a;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Cairo';
+            transition: .2s;
+            background: white;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10,77,140,0.15);
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: .3s;
+            font-family: 'Cairo';
+            background: var(--primary);
+            color: white;
+        }
+        .btn:hover {
+            background: #062A4A;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(10,77,140,0.3);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success-msg {
+            background: #d1fae5;
+            border: 2px solid #059669;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .error-msg {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 640px) {
+            .container { padding: 15px; }
+            .contact-info { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📞 التواصل وحجز الدروس</h1>
+        <div class="subtitle">تواصل معنا أو احجز درساً خصوصياً</div>
+    </div>
+
+    <div class="contact-info">
+        <a href="https://wa.me/201120008704" target="_blank" class="contact-card">
+            <div class="icon">📱</div>
+            <div class="label">واتساب</div>
+            <div class="value">01120008704</div>
+        </a>
+        <a href="https://t.me/Edu_Samar_Academy_bot" target="_blank" class="contact-card">
+            <div class="icon">🤖</div>
+            <div class="label">تليجرام</div>
+            <div class="value">@Edu_Samar_Academy_bot</div>
+        </a>
+        <a href="mailto:samaracademy254@gmail.com" target="_blank" class="contact-card">
+            <div class="icon">📧</div>
+            <div class="label">البريد الإلكتروني</div>
+            <div class="value">samaracademy254@gmail.com</div>
+        </a>
+        <a href="https://web.facebook.com/SamarAcademy.AS" target="_blank" class="contact-card">
+            <div class="icon">📘</div>
+            <div class="label">فيسبوك</div>
+            <div class="value">سمر أكاديمي</div>
+        </a>
+    </div>
+
+    <div class="booking-form">
+        <h2>📚 حجز درس خصوصي</h2>
+        <p style="color:var(--gray);text-align:center;margin-bottom:20px;">املأ البيانات وسنقوم بالتواصل معك لتأكيد الحجز</p>
+
+        <div id="successMsg" class="success-msg">
+            ✅ تم استلام طلب الحجز بنجاح! سيتم التواصل معك قريباً.
+        </div>
+        <div id="errorMsg" class="error-msg">
+            ⚠️ حدث خطأ، يرجى المحاولة مرة أخرى.
+        </div>
+
+        <form id="bookingForm">
+            <div class="form-group">
+                <label>👤 الاسم الكامل</label>
+                <input type="text" id="name" placeholder="أدخل اسمك" required>
+            </div>
+            <div class="form-group">
+                <label>📱 رقم الهاتف (واتساب)</label>
+                <input type="tel" id="phone" placeholder="مثال: 01120008704" required>
+            </div>
+            <div class="form-group">
+                <label>📚 الصف الدراسي</label>
+                <select id="grade" required>
+                    <option value="">اختر الصف...</option>
+                    <option value="p4">رابع ابتدائي</option>
+                    <option value="p5">خامس ابتدائي</option>
+                    <option value="p6">سادس ابتدائي</option>
+                    <option value="m1">أول إعدادي</option>
+                    <option value="m2">ثاني إعدادي</option>
+                    <option value="m3">ثالث إعدادي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📖 المادة</label>
+                <select id="subject" required>
+                    <option value="">اختر المادة...</option>
+                    <option value="arabic">اللغة العربية</option>
+                    <option value="social">الدراسات الاجتماعية</option>
+                    <option value="science">العلوم</option>
+                    <option value="math">الرياضيات</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📋 نوع الحجز</label>
+                <select id="bookingType" required>
+                    <option value="regular">📚 درس خصوصي عادي</option>
+                    <option value="trial">🆓 حصة تجريبية مجانية</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📅 التاريخ المفضل</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label>⏰ الوقت المفضل</label>
+                <select id="time" required>
+                    <option value="">اختر الوقت...</option>
+                    <option value="08:00">08:00 صباحاً</option>
+                    <option value="09:00">09:00 صباحاً</option>
+                    <option value="10:00">10:00 صباحاً</option>
+                    <option value="11:00">11:00 صباحاً</option>
+                    <option value="12:00">12:00 ظهراً</option>
+                    <option value="14:00">02:00 عصراً</option>
+                    <option value="15:00">03:00 عصراً</option>
+                    <option value="16:00">04:00 عصراً</option>
+                    <option value="17:00">05:00 مساءً</option>
+                    <option value="18:00">06:00 مساءً</option>
+                    <option value="19:00">07:00 مساءً</option>
+                    <option value="20:00">08:00 مساءً</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📝 ملاحظات إضافية</label>
+                <textarea id="notes" placeholder="أي تفاصيل إضافية تريد إضافتها..."></textarea>
+            </div>
+            <button type="submit" class="btn" id="submitBtn">📩 إرسال طلب الحجز</button>
+        </form>
+    </div>
+
+    <a href="../../index.html" class="back-link">🏠 العودة للرئيسية</a>
+</div>
+
+<script>
+    const API_URL = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const successMsg = document.getElementById('successMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        successMsg.style.display = 'none';
+        errorMsg.style.display = 'none';
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ جاري الإرسال...';
+        
+        const data = {
+            name: document.getElementById('name').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            grade: document.getElementById('grade').value,
+            subject: document.getElementById('subject').value,
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value,
+            notes: document.getElementById('notes').value.trim(),
+            bookingType: document.getElementById('bookingType').value
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/api/booking`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                successMsg.style.display = 'block';
+                document.getElementById('bookingForm').reset();
+            } else {
+                errorMsg.textContent = '⚠️ ' + result.message;
+                errorMsg.style.display = 'block';
+            }
+        } catch (error) {
+            errorMsg.textContent = '⚠️ فشل الاتصال بالخادم. تأكد من أن السيرفر يعمل.';
+            errorMsg.style.display = 'block';
+            console.error('Error:', error);
+        }
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📩 إرسال طلب الحجز';
+    });
+    
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('date').min = tomorrow.toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سمر أكاديمي - منصة تعليمية مصرية</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="سمر أكاديمي - منصة تعليمية مصرية متخصصة في المناهج الدراسية للصفوف الابتدائية والإعدادية" />
+    <meta name="keywords" content="سمر أكاديمي, منصة تعليمية, مناهج مصرية, دروس خصوصية, اختبارات" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="سمر أكاديمي - المناهج المصرية" />
+    <meta property="og:description" content="منصة تعليمية مصرية متخصصة في المناهج الدراسية" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://samaracademy254-png.github.io/samaracadmy/" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet" />
+    
+    <style>
+        /* ===== Reset & Variables ===== */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        :root {
+            --primary: #0A4D8C;
+            --primary-dark: #062A4A;
+            --primary-light: #D4E6F1;
+            --primary-gradient: linear-gradient(135deg, #0A4D8C 0%, #062A4A 100%);
+            --gold: #F4A261;
+            --gold-light: #FADDCB;
+            --gold-gradient: linear-gradient(135deg, #F4A261 0%, #E07C3C 100%);
+            --white: #FFFFFF;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-300: #CBD5E1;
+            --gray-500: #64748B;
+            --gray-700: #334155;
+            --gray-900: #0F172A;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-primary: 'Cairo', 'Tajawal', sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-primary);
+            background: var(--gray-50);
+            color: var(--gray-900);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* ===== Navbar ===== */
+        .navbar {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 900;
+        }
+        .navbar .logo .flag { font-size: 1.6rem; }
+        .navbar .logo .gold { color: var(--gold); }
+        .navbar .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .navbar .nav-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+        }
+        .navbar .nav-links a:hover {
+            color: white;
+            background: rgba(255,255,255,0.12);
+        }
+        .navbar .nav-links a.active {
+            color: white;
+            background: rgba(255,255,255,0.18);
+        }
+        .navbar .nav-links .btn-gold {
+            background: var(--gold-gradient);
+            color: #78350F;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+        .navbar .nav-links .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(200,164,77,0.4);
+            background: var(--gold);
+        }
+        
+        /* Hamburger */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        
+        /* ===== Hero ===== */
+        .hero {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 60px 24px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: radial-gradient(ellipse, rgba(200,164,77,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero .flag {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .hero h1 .gold { color: var(--gold); }
+        .hero .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.85;
+            margin-bottom: 30px;
+        }
+        .hero .btn-hero {
+            display: inline-block;
+            background: var(--gold-gradient);
+            color: #78350F;
+            padding: 16px 48px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(200,164,77,0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .hero .btn-hero:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 35px rgba(200,164,77,0.5);
+        }
+        
+        /* ===== Features ===== */
+        .features {
+            padding: 50px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: white;
+            padding: 25px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gold);
+        }
+        .feature-card .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .feature-card h3 { color: var(--primary); font-size: 1.1rem; }
+        .feature-card p { color: var(--gray-500); font-size: 0.9rem; }
+        
+        /* ===== Wizard ===== */
+        .wizard-section {
+            background: white;
+            padding: 40px 24px;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+        }
+        .wizard-section h2 {
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .wizard-section .desc {
+            text-align: center;
+            color: var(--gray-500);
+            margin-bottom: 25px;
+        }
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity:0; transform:translateY(10px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+        
+        .wizard-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .wizard-option {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .wizard-option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .wizard-option .emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+        .wizard-option.selected {
+            border-color: var(--gold);
+            background: var(--gold-light);
+        }
+        
+        .wizard-nav {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .wizard-nav .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-primary);
+        }
+        .wizard-nav .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .wizard-nav .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .wizard-nav .btn-outline {
+            background: transparent;
+            border: 2px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+        .wizard-nav .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .wizard-nav .btn-gold {
+            background: var(--gold-gradient);
+            color: #78350F;
+        }
+        .wizard-nav .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* ===== Contact Buttons ===== */
+        .contact-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+        }
+        .contact-bar a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition);
+            color: white;
+        }
+        .contact-bar .whatsapp { background: #25D366; }
+        .contact-bar .whatsapp:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(37,211,102,0.4); }
+        .contact-bar .telegram { background: #0088CC; }
+        .contact-bar .telegram:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,136,204,0.4); }
+        .contact-bar .booking { background: var(--primary); }
+        .contact-bar .booking:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(10,77,140,0.4); }
+        
+        /* ===== Footer ===== */
+        .footer {
+            background: var(--gray-900);
+            color: rgba(255,255,255,0.7);
+            padding: 30px 24px;
+            text-align: center;
+        }
+        .footer .brand {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 6px;
+        }
+        .footer .brand .gold { color: var(--gold); }
+        .footer .slogan { margin-bottom: 15px; font-size: 0.9rem; }
+        .footer .links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .footer .links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .footer .links a:hover { color: white; }
+        .footer .copy { font-size: 0.8rem; opacity: 0.6; }
+        
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .hamburger { display: block; }
+            .navbar .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 8px;
+                padding-top: 12px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+            }
+            .navbar .nav-links.open { display: flex; }
+            .hero h1 { font-size: 2rem; }
+            .hero .subtitle { font-size: 1rem; }
+            .hero .btn-hero { padding: 14px 32px; font-size: 1rem; }
+            .features-grid { grid-template-columns: 1fr 1fr; }
+            .wizard-options { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .wizard-options { grid-template-columns: 1fr; }
+            .contact-bar a { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Navbar ===== -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="flag">🇪🇬</span>
+                سمر <span class="gold">أكاديمي</span>
+            </div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="القائمة">☰</button>
+            <div class="nav-links" id="navLinks">
+                <a href="#" class="active">الرئيسية</a>
+                <a href="#wizard">الدروس</a>
+                <a href="pages/Study/index.html">الشرح</a>
+                <a href="pages/Home/index.html">الاختبارات</a>
+                <a href="pages/Contact/index.html">تواصل</a>
+                <a href="pages/Contact/index.html" class="btn-gold">📞 حجز درس</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+        <div class="container">
+            <span class="flag">🇪🇬</span>
+            <h1>سمر <span class="gold">أكاديمي</span></h1>
+            <p class="subtitle">من أجل جيل متميز لمستقبل أفضل</p>
+            <a href="#wizard" class="btn-hero">📚 لنتعلم سوياً</a>
+        </div>
+    </section>
+
+    <!-- ===== Features ===== -->
+    <section class="features" id="features">
+        <h2>✨ مميزات المنصة</h2>
+        <div class="features-grid">
+            <div class="feature-card"><div class="icon">📖</div><h3>دروس مجانية</h3><p>جميع الدروس متاحة مجاناً للطلاب</p></div>
+            <div class="feature-card"><div class="icon">🧠</div><h3>شرح مبسط</h3><p>فيديوهات وملخصات سهلة الفهم</p></div>
+            <div class="feature-card"><div class="icon">⚡</div><h3>سرعة عالية</h3><p>تحميل فوري بدون تأخير</p></div>
+            <div class="feature-card"><div class="icon">📱</div><h3>جميع الأجهزة</h3><p>يعمل على الهاتف والجهاز اللوحي والحاسوب</p></div>
+            <div class="feature-card"><div class="icon">📝</div><h3>اختبارات تفاعلية</h3><p>أسئلة متنوعة مع تصحيح فوري</p></div>
+            <div class="feature-card"><div class="icon">🔄</div><h3>تحديث مستمر</h3><p>محتوى متجدد باستمرار</p></div>
+        </div>
+    </section>
+
+    <!-- ===== Wizard ===== -->
+    <section class="wizard-section" id="wizard">
+        <h2>📚 اختر مسار التعلم</h2>
+        <p class="desc">اختر المرحلة، الصف، المادة، ثم الدرس الذي تريد دراسته</p>
+        
+        <div class="wizard-step active" id="step1">
+            <h3 style="margin-bottom:15px;">اختر المرحلة الدراسية</h3>
+            <div class="wizard-options">
+                <div class="wizard-option" onclick="selectStage('primary')">
+                    <span class="emoji">🏫</span> المرحلة الابتدائية
+                    <small style="display:block;color:var(--gray-500);font-weight:400;">رابع - خامس - سادس</small>
+                </div>
+                <div class="wizard-option" onclick="selectStage('intermediate')">
+                    <span class="emoji">🏛️</span> المرحلة الإعدادية
+                    <small style="display:block;color:var(--gray-500);font-weight:400;">أول - ثاني - ثالث</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="wizard-step" id="step2">
+            <h3 style="margin-bottom:15px;">اختر الصف الدراسي</h3>
+            <div class="wizard-options" id="gradesContainer"></div>
+            <div class="wizard-nav">
+                <button class="btn btn-outline" onclick="goToStep(1)">⬅️ رجوع</button>
+            </div>
+        </div>
+        
+        <div class="wizard-step" id="step3">
+            <h3 style="margin-bottom:15px;">اختر المادة</h3>
+            <div class="wizard-options" id="subjectsContainer"></div>
+            <div class="wizard-nav">
+                <button class="btn btn-outline" onclick="goToStep(2)">⬅️ رجوع</button>
+            </div>
+        </div>
+        
+        <div class="wizard-step" id="step4">
+            <h3 style="margin-bottom:15px;">اختر الوحدة</h3>
+            <div class="wizard-options" id="unitsContainer"></div>
+            <div class="wizard-nav">
+                <button class="btn btn-outline" onclick="goToStep(3)">⬅️ رجوع</button>
+            </div>
+        </div>
+        
+        <div class="wizard-step" id="step5">
+            <h3 style="margin-bottom:15px;">اختر الدرس</h3>
+            <div class="wizard-options" id="lessonsContainer"></div>
+            <div class="wizard-nav">
+                <button class="btn btn-outline" onclick="goToStep(4)">⬅️ رجوع</button>
+            </div>
+        </div>
+        
+        <div class="wizard-step" id="step6">
+            <div style="text-align:center;padding:20px;">
+                <div style="font-size:4rem;">🎯</div>
+                <h3 style="color:var(--primary);margin:15px 0;">جاهز للتعلم!</h3>
+                <p style="color:var(--gray-500);margin-bottom:20px;" id="selectionSummary"></p>
+                <div class="wizard-nav">
+                    <a href="#" class="btn btn-gold" id="startStudyBtn" style="text-decoration:none;">📖 ابدأ الشرح</a>
+                    <a href="#" class="btn btn-primary" id="startQuizBtn" style="text-decoration:none;">📝 ابدأ الاختبار</a>
+                    <button class="btn btn-outline" onclick="goToStep(5)">⬅️ رجوع</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Contact Bar ===== -->
+    <div style="max-width:900px;margin:0 auto;">
+        <div class="contact-bar">
+            <a href="https://wa.me/201120008704" target="_blank" class="whatsapp">📱 واتساب</a>
+            <a href="https://t.me/Edu_Samar_Academy_bot" target="_blank" class="telegram">🤖 تليجرام</a>
+            <a href="pages/Contact/index.html" class="booking">📞 حجز درس خصوصي</a>
+        </div>
+    </div>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+        <div class="brand">🇪🇬 سمر <span class="gold">أكاديمي</span></div>
+        <p class="slogan">من أجل جيل متميز لمستقبل أفضل</p>
+        <div class="links">
+            <a href="#">الرئيسية</a>
+            <a href="#wizard">الدروس</a>
+            <a href="pages/Study/index.html">الشرح</a>
+            <a href="pages/Home/index.html">الاختبارات</a>
+            <a href="pages/Contact/index.html">تواصل</a>
+        </div>
+        <p class="copy">© 2026 سمر أكاديمي - جميع الحقوق محفوظة</p>
+    </footer>
+
+    <script>
+        // ===== Wizard Logic =====
+        let state = { stage: '', grade: '', subject: '', unit: '', lesson: '' };
+        
+        const grades = {
+            primary: [
+                { id: 'p4', name: 'الصف الرابع الابتدائي' },
+                { id: 'p5', name: 'الصف الخامس الابتدائي' },
+                { id: 'p6', name: 'الصف السادس الابتدائي' }
+            ],
+            intermediate: [
+                { id: 'm1', name: 'الصف الأول الإعدادي' },
+                { id: 'm2', name: 'الصف الثاني الإعدادي' },
+                { id: 'm3', name: 'الصف الثالث الإعدادي' }
+            ]
+        };
+        
+        const primarySubjects = ['اللغة العربية', 'الدراسات الاجتماعية', 'العلوم', 'الرياضيات'];
+        const intermediateSubjects = ['الدراسات الاجتماعية', 'العلوم'];
+        
+        function getSubjectsForGrade(gradeId) {
+            if (gradeId.startsWith('p')) return primarySubjects;
+            if (gradeId.startsWith('m')) return intermediateSubjects;
+            return [];
+        }
+        
+        const unitsDataMock = {
+            'اللغة العربية': [
+                { id: 'u1', name: 'الوحدة الأولى: القراءة والفهم' },
+                { id: 'u2', name: 'الوحدة الثانية: النحو والصرف' }
+            ],
+            'الدراسات الاجتماعية': [
+                { id: 'u1', name: 'الوحدة الأولى: وطني مصر' },
+                { id: 'u2', name: 'الوحدة الثانية: تاريخ مصر' }
+            ],
+            'العلوم': [
+                { id: 'u1', name: 'الوحدة الأولى: الكائنات الحية' },
+                { id: 'u2', name: 'الوحدة الثانية: الطاقة' }
+            ],
+            'الرياضيات': [
+                { id: 'u1', name: 'الوحدة الأولى: الأعداد' },
+                { id: 'u2', name: 'الوحدة الثانية: العمليات' }
+            ]
+        };
+        
+        function goToStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+        }
+        
+        function selectStage(stage) {
+            state.stage = stage;
+            const list = grades[stage] || [];
+            document.getElementById('gradesContainer').innerHTML = list.map(g => `
+                <div class="wizard-option" onclick="selectGrade('${g.id}')">
+                    <span class="emoji">📚</span> ${g.name}
+                </div>
+            `).join('');
+            goToStep(2);
+        }
+        
+        function selectGrade(gradeId) {
+            state.grade = gradeId;
+            const subjects = getSubjectsForGrade(gradeId);
+            document.getElementById('subjectsContainer').innerHTML = subjects.map(s => `
+                <div class="wizard-option" onclick="selectSubject('${s}')">
+                    <span class="emoji">📖</span> ${s}
+                </div>
+            `).join('');
+            goToStep(3);
+        }
+        
+        function selectSubject(subject) {
+            state.subject = subject;
+            const units = unitsDataMock[subject] || [];
+            document.getElementById('unitsContainer').innerHTML = units.map(u => `
+                <div class="wizard-option" onclick="selectUnit('${u.id}')">
+                    <span class="emoji">📂</span> ${u.name}
+                </div>
+            `).join('');
+            goToStep(4);
+        }
+        
+        function selectUnit(unitId) {
+            state.unit = unitId;
+            const mockLessons = [
+                { id: 'l1', name: 'الدرس الأول: المقدمة' },
+                { id: 'l2', name: 'الدرس الثاني: الموضوع الرئيسي' },
+                { id: 'l3', name: 'الدرس الثالث: التطبيقات' }
+            ];
+            document.getElementById('lessonsContainer').innerHTML = mockLessons.map(l => `
+                <div class="wizard-option" onclick="selectLesson('${l.id}')">
+                    <span class="emoji">📝</span> ${l.name}
+                </div>
+            `).join('');
+            goToStep(5);
+        }
+        
+        function selectLesson(lessonId) {
+            state.lesson = lessonId;
+            document.getElementById('selectionSummary').textContent = 
+                `الصف: ${state.grade} | المادة: ${state.subject} | الوحدة: ${state.unit} | الدرس: ${lessonId}`;
+            
+            const baseUrl = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+            document.getElementById('startStudyBtn').href = 
+                `pages/Study/index.html?grade=${state.grade}&subject=${state.subject}&unit=${state.unit}&lesson=${lessonId}`;
+            document.getElementById('startQuizBtn').href = 
+                `pages/Home/index.html?grade=${state.grade}&subject=${state.subject}&unit=${state.unit}&lesson=${lessonId}`;
+            
+            goToStep(6);
+        }
+        
+        // ===== Navbar Hamburger =====
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                if (navLinks) navLinks.classList.toggle('open');
+            });
+        }
+        
+        // ===== Smooth Scroll =====
+        document.querySelector('.btn-hero').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('wizard').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

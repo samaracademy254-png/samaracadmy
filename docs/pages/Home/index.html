@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أكاديمية الأستاذ - الاختبارات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary: #006C35;
+  --primary-dark: #004B23;
+  --gold: #C8A44D;
+  --success: #059669;
+  --success-bg: #d1fae5;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --gray: #64748b;
+  --bg: #f8fafc;
+  --white: #ffffff;
+  --radius: 24px;
+}
+body {
+  font-family: 'Cairo', sans-serif;
+  background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+  min-height: 100vh; padding: 20px; display: flex; justify-content: center;
+}
+.app {
+  width: 100%; max-width: 1000px; background: var(--white);
+  border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,.1);
+}
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; text-align: center; padding: 25px 20px;
+}
+.header h1 { font-size: 1.6rem; }
+.grade-selector, .subject-selector {
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 12px;
+}
+.grade-btn, .subject-btn {
+  background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,0.3);
+  color: white; padding: 6px 16px; border-radius: 30px; font-weight: bold;
+  cursor: pointer; transition: .2s; font-size: 0.9rem;
+}
+.grade-btn.active, .grade-btn:hover,
+.subject-btn.active, .subject-btn:hover {
+  background: var(--gold); color: #78350f; border-color: var(--gold);
+}
+.tabs {
+  display: flex; justify-content: center; gap: 15px;
+  padding: 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
+}
+.tab-btn {
+  padding: 10px 35px; border: none; border-radius: 30px;
+  cursor: pointer; font-weight: 700; font-size: 1rem;
+  transition: .3s; font-family: 'Cairo';
+}
+.tab-btn.active {
+  background: var(--primary); color: white;
+}
+.tab-btn.inactive {
+  background: #e2e8f0; color: #64748b;
+}
+.tab-btn.inactive:hover { background: #cbd5e1; }
+
+.progress-bar { width: 100%; height: 6px; background: #dbeafe; }
+.progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--gold), #fbbf24); transition: width .3s; }
+
+.stats {
+  display: flex; justify-content: space-around; padding: 10px 15px;
+  background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap; gap: 8px; font-size: 0.9rem;
+}
+.stat { font-weight: 800; color: var(--primary); background: white; padding: 4px 14px; border-radius: 50px; }
+
+.quiz { padding: 25px; min-height: 300px; }
+
+/* بطاقات الوحدات والدروس */
+.grid-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px; margin-top: 20px;
+}
+.card-item {
+  background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+  padding: 20px 15px; cursor: pointer; transition: .2s;
+  text-align: center; font-weight: 700;
+}
+.card-item:hover {
+  border-color: var(--primary); background: #f0fdf4;
+  transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+.card-item .icon { font-size: 2.5rem; margin-bottom: 8px; }
+.card-item .sub { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
+
+.back-btn {
+  background: var(--gray); color: white; border: none;
+  padding: 8px 24px; border-radius: 30px; cursor: pointer;
+  font-weight: 700; font-family: 'Cairo'; margin-bottom: 15px;
+  transition: .2s;
+}
+.back-btn:hover { background: #475569; }
+
+/* محرك الأسئلة */
+.topic { background: #dbeafe; display: inline-block; padding: 4px 16px; border-radius: 30px; margin-bottom: 15px; font-weight: 800; color: var(--primary); font-size: 0.9rem; }
+.question { font-size: 1.2rem; background: #f8fafc; padding: 18px; border-radius: 16px; border-right: 5px solid var(--primary); margin-bottom: 20px; line-height: 1.7; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.option {
+  background: white; border: 2px solid #e2e8f0; border-radius: 14px;
+  padding: 12px 16px; cursor: pointer; transition: .2s; font-weight: 700; text-align: center;
+}
+.option:hover:not(.locked) { border-color: var(--primary); background: #f0fdf4; transform: translateY(-2px); }
+.option.correct { background: var(--success-bg); border-color: var(--success); }
+.option.wrong { background: var(--danger-bg); border-color: var(--danger); }
+.locked { pointer-events: none; }
+
+.match-container { background: #f1f5f9; border-radius: 16px; padding: 18px; margin: 15px 0; }
+.match-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; background: white; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
+.match-left { flex: 1; font-weight: bold; background: #e0e7ff; padding: 8px; border-radius: 10px; text-align: center; }
+.match-right select { padding: 8px 14px; border-radius: 10px; border: 2px solid #cbd5e1; font-family: 'Cairo'; font-weight: bold; }
+.check-match-btn { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; width: 100%; }
+
+.feedback { margin-top: 18px; padding: 14px 18px; border-radius: 14px; display: none; animation: slideUp .3s; font-size: 0.95rem; }
+.feedback.success { background: var(--success-bg); border: 2px solid #6ee7b7; color: #065f46; display: block; }
+.feedback.error { background: var(--danger-bg); border: 2px solid #fca5a5; color: #991b1b; display: block; }
+
+.timer-notice { margin: 12px 0; padding: 10px; background: #fef3c7; border-radius: 30px; color: #92400e; font-size: 0.9rem; text-align: center; display: none; }
+
+.footer { padding: 15px 20px; text-align: center; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.btn { padding: 10px 28px; border: none; border-radius: 30px; font-weight: 700; cursor: pointer; transition: .2s; font-size: 0.95rem; font-family: 'Cairo'; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+.btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+.btn-outline:hover { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+
+@keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width: 640px) { .options { grid-template-columns: 1fr; } .question { font-size: 1.05rem; } .header h1 { font-size: 1.3rem; } .grid-cards { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>📚 أكاديمية الأستاذ - الاختبارات</h1>
+    <div class="grade-selector" id="gradeSelector">
+      <button data-grade="p4" class="grade-btn">رابع</button>
+      <button data-grade="p5" class="grade-btn active">خامس</button>
+      <button data-grade="p6" class="grade-btn">سادس</button>
+      <button data-grade="m1" class="grade-btn">أول متوسط</button>
+      <button data-grade="m2" class="grade-btn">ثاني متوسط</button>
+      <button data-grade="m3" class="grade-btn">ثالث متوسط</button>
+    </div>
+    <div class="subject-selector" id="subjectSelector">
+      <button data-subject="science" class="subject-btn">🔬 علوم</button>
+      <button data-subject="social" class="subject-btn active">🌍 اجتماعيات</button>
+      <button data-subject="math" class="subject-btn">📐 رياضيات</button>
+    </div>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="stats">
+    <div class="stat">📋 السؤال <span id="statCurrent">0</span>/<span id="statTotal">0</span></div>
+    <div class="stat">⭐ النقاط <span id="statScore">0</span></div>
+    <div class="stat">✅ صحيح <span id="statCorrect">0</span></div>
+    <div class="stat">❌ خطأ <span id="statWrong">0</span></div>
+  </div>
+
+  <div class="quiz" id="quizContainer">
+    <div style="text-align:center;padding:50px;color:#64748B;">⏳ جاري تحميل الوحدات...</div>
+  </div>
+
+  <div class="timer-notice" id="timerNotice"></div>
+  <div class="footer">
+    <button class="btn btn-primary" id="nextBtn" style="display:none;">← السؤال التالي</button>
+    <button class="btn btn-outline" id="restartBtn">🔄 إعادة الاختبار</button>
+    <a href="../../index.html" class="btn btn-outline" style="text-decoration:none;">🏠 الرئيسية</a>
+    <a href="../Study/index.html" id="studyLink" class="btn btn-success" style="text-decoration:none;">📖 العودة للشرح</a>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// حالة التطبيق
+// ============================================================
+let currentGrade = 'p5';
+let currentSubject = 'social';
+let currentUnitId = null;
+let currentLessonId = null;
+
+// حالة الاختبار
+let questions = [];
+let currentIndex = 0;
+let score = 0, correctCount = 0, wrongCount = 0;
+let answered = false;
+let totalQuestions = 0;
+let autoTimer = null;
+let quizActive = false; // للتمييز بين وضع عرض الوحدات ووضع الاختبار
+
+// عناصر DOM
+const container = document.getElementById('quizContainer');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const timerNotice = document.getElementById('timerNotice');
+const gradeBtns = document.querySelectorAll('.grade-btn');
+const subjectBtns = document.querySelectorAll('.subject-btn');
+const studyLink = document.getElementById('studyLink');
+
+// ============================================================
+// دوال حفظ وتحميل التقدم
+// ============================================================
+function saveProgress() {
+  if (!quizActive || !questions.length) return;
+  try {
+    const progress = {
+      grade: currentGrade,
+      subject: currentSubject,
+      unit: currentUnitId,
+      lesson: currentLessonId,
+      currentIndex,
+      score,
+      correctCount,
+      wrongCount,
+      answered,
+      totalQuestions,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('quizProgress', JSON.stringify(progress));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem('quizProgress');
+    if (!saved) return false;
+    const p = JSON.parse(saved);
+    if (p.grade === currentGrade && p.subject === currentSubject && 
+        p.unit === currentUnitId && p.lesson === currentLessonId &&
+        p.totalQuestions === totalQuestions) {
+      currentIndex = p.currentIndex;
+      score = p.score;
+      correctCount = p.correctCount;
+      wrongCount = p.wrongCount;
+      answered = p.answered;
+      updateStats();
+      updateProgress();
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function clearProgress() {
+  localStorage.removeItem('quizProgress');
+}
+
+function updateStats() {
+  document.getElementById('statScore').textContent = score;
+  document.getElementById('statCorrect').textContent = correctCount;
+  document.getElementById('statWrong').textContent = wrongCount;
+  document.getElementById('statCurrent').textContent = currentIndex + 1;
+  document.getElementById('statTotal').textContent = totalQuestions || '?';
+}
+
+function updateProgress() {
+  const pct = totalQuestions ? ((currentIndex) / totalQuestions) * 100 : 0;
+  document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+}
+
+function clearAutoTimer() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  timerNotice.style.display = 'none';
+  timerNotice.innerHTML = '';
+}
+
+function startAutoTransition(isCorrect) {
+  clearAutoTimer();
+  const delay = isCorrect ? 5000 : 15000;
+  const seconds = delay / 1000;
+  timerNotice.style.display = 'block';
+  timerNotice.innerHTML = `⏳ الانتقال التلقائي بعد ${seconds} ثانية...`;
+  autoTimer = setTimeout(() => {
+    if (nextBtn.style.display !== 'none') { nextQuestion(); }
+    clearAutoTimer();
+  }, delay);
+}
+
+// ============================================================
+// دوال عرض الوحدات والدروس
+// ============================================================
+async function loadUnits() {
+  quizActive = false;
+  nextBtn.style.display = 'none';
+  container.innerHTML = '<div style="text-align:center;padding:50px;color:#64748B;">⏳ جاري تحميل الوحدات...</div>';
+  
+  try {
+    const res = await fetch('../../data/units.json');
+    if (!res.ok) throw new Error('units.json غير موجود');
+    const data = await res.json();
+    const units = data[currentGrade]?.[currentSubject]?.units || [];
+    
+    if (!units.length) {
+      container.innerHTML = '<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد وحدات لهذه المادة</div>';
+      return;
+    }
+
+    let html = `
+      <div style="margin-bottom:15px;">
+        <h3 style="color:var(--primary);">📚 اختر الوحدة الدراسية</h3>
+        <p style="color:var(--gray);font-size:0.9rem;">${currentGrade} - ${currentSubject}</p>
+      </div>
+      <div class="grid-cards">
+    `;
+    
+    units.forEach(unit => {
+      html += `
+        <div class="card-item" onclick="loadLessons('${unit.id}')">
+          <div class="icon">📖</div>
+          <div>${unit.name}</div>
+          <div class="sub">${unit.lessons} دروس</div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    
+    // تحديث الإحصائيات
+    totalQuestions = 0;
+    currentIndex = 0;
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    updateStats();
+    updateProgress();
+    
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل تحميل الوحدات: ${e.message}</div>`;
+  }
+}
+
+window.loadLessons = async function(unitId) {
+  currentUnitId = unitId;
+  quizActive = false;
+  nextBtn.style.display = 'none';
+  container.innerHTML = '<div style="text-align:center;padding:50px;color:#64748B;">⏳ جاري تحميل الدروس...</div>';
+  
+  try {
+    // محاولة قراءة lessons.json
+    let lessons = [];
+    const path = `../../data/quiz_data/${currentGrade}/${currentSubject}/${unitId}/lessons.json`;
+    const res = await fetch(path);
+    
+    if (res.ok) {
+      const data = await res.json();
+      lessons = data.lessons || [];
+    } else {
+      // إذا لم يوجد lessons.json، نبحث عن lesson1.json, lesson2.json ...
+      let i = 1;
+      while (true) {
+        try {
+          const testPath = `../../data/quiz_data/${currentGrade}/${currentSubject}/${unitId}/lesson${i}.json`;
+          const testRes = await fetch(testPath);
+          if (!testRes.ok) break;
+          lessons.push({ id: `lesson${i}`, name: `الدرس ${i}` });
+          i++;
+        } catch { break; }
+      }
+    }
+    
+    if (!lessons.length) {
+      container.innerHTML = '<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد دروس في هذه الوحدة</div>';
+      return;
+    }
+
+    let html = `
+      <button class="back-btn" onclick="loadUnits()">⬅️ العودة للوحدات</button>
+      <h3 style="color:var(--primary);">📝 اختر الدرس</h3>
+      <div class="grid-cards">
+    `;
+    
+    lessons.forEach((lesson, idx) => {
+      const lessonId = lesson.id || `lesson${idx+1}`;
+      html += `
+        <div class="card-item" onclick="startQuiz('${unitId}', '${lessonId}')">
+          <div class="icon">📝</div>
+          <div>${lesson.name}</div>
+          <div class="sub">اختبار تفاعلي</div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل تحميل الدروس: ${e.message}</div>`;
+  }
+};
+
+// ============================================================
+// بدء الاختبار
+// ============================================================window.startQuiz = async function(unitId, lessonId) {
+  currentUnitId = unitId;
+  currentLessonId = lessonId;
+  quizActive = true;
+  nextBtn.style.display = 'none';
+  container.innerHTML = '<div style="text-align:center;padding:50px;color:#64748B;">⏳ جاري تحميل الأسئلة...</div>';
+  
+  const API_BASE = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+  const path = `${API_BASE}/api/quiz/${currentGrade}/${currentSubject}/${unitId}/${lessonId}`;
+  
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`HTTP ${res.status} - الدرس غير موجود`);
+    const data = await res.json();
+    
+    if (!data.questions || !data.questions.length) {
+      throw new Error('لا توجد أسئلة في هذا الدرس');
+    }
+    
+    questions = data.questions;
+    if (data.shuffle) shuffleArray(questions);
+    totalQuestions = questions.length;
+    
+    const loaded = loadProgress();
+    if (!loaded) {
+      currentIndex = 0;
+      score = 0;
+      correctCount = 0;
+      wrongCount = 0;
+      answered = false;
+    }
+    
+    updateStats();
+    updateProgress();
+    renderQuestion();
+    
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `
+      <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+      <div style="color:#dc2626;padding:20px;text-align:center;">
+        ⚠️ فشل تحميل الأسئلة:<br>${e.message}<br><br>
+        تأكد من وجود الملف: ${path}
+      </div>
+    `;
+    nextBtn.style.display = 'none';
+  }
+
+// ============================================================
+// محرك عرض الأسئلة
+// ============================================================
+function renderQuestion() {
+  if (!questions.length || currentIndex >= totalQuestions) {
+    showResult();
+    return;
+  }
+  
+  clearAutoTimer();
+  const q = questions[currentIndex];
+  answered = false;
+  let html = `
+    <button class="back-btn" onclick="loadLessons('${currentUnitId}')">⬅️ العودة للدروس</button>
+    <div class="topic">📘 ${escapeHtml(q.topic || 'موضوع')}</div>
+    <div class="question">${escapeHtml(q.question)}</div>
+  `;
+  
+  if (q.type === 'mcq') {
+    html += `<div class="options">`;
+    q.options.forEach((opt, idx) => {
+      html += `<div class="option" data-opt="${idx}" onclick="checkMCQ(${idx}, this)">${escapeHtml(opt)}</div>`;
+    });
+    html += `</div>`;
+  } else if (q.type === 'truefalse') {
+    html += `<div class="options">
+              <div class="option" data-opt="true" onclick="checkTrueFalse(true, this)">✅ صواب</div>
+              <div class="option" data-opt="false" onclick="checkTrueFalse(false, this)">❌ خطأ</div>
+            </div>`;
+  } else if (q.type === 'matching') {
+    html += `<div class="match-container">`;
+    q.pairs.forEach((pair, idx) => {
+      html += `<div class="match-row">
+                <div class="match-left">${escapeHtml(pair.left)}</div>
+                <div class="match-right">
+                  <select id="matchSelect_${idx}">
+                    <option value="">-- اختر --</option>`;
+      q.rightOptions.forEach((opt, optIdx) => {
+        html += `<option value="${optIdx}">${escapeHtml(opt)}</option>`;
+      });
+      html += `</select></div></div>`;
+    });
+    html += `<button class="check-match-btn" onclick="checkMatching()">🔍 تحقق من الوصل</button></div>`;
+  }
+  
+  html += `<div class="feedback" id="feedbackMsg"></div>`;
+  container.innerHTML = html;
+  nextBtn.style.display = 'none';
+}
+
+// ============================================================
+// دوال التصحيح (MCQ, True/False, Matching)
+// ============================================================
+window.checkMCQ = function(selectedIdx, element) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentIndex];
+  const correctIdx = q.correct;
+  const isCorrect = (selectedIdx === correctIdx);
+  const allOpts = document.querySelectorAll('.option');
+  allOpts.forEach(opt => opt.classList.add('locked'));
+  
+  if (isCorrect) {
+    element.classList.add('correct');
+    score += (q.points || 10);
+    correctCount++;
+    showFeedback(true, q.explanation || '✅ إجابة صحيحة!');
+  } else {
+    element.classList.add('wrong');
+    if (allOpts[correctIdx]) allOpts[correctIdx].classList.add('correct');
+    wrongCount++;
+    showFeedback(false, `❌ الإجابة الصحيحة: ${escapeHtml(q.options[correctIdx])}<br>${q.explanation || ''}`);
+  }
+  updateStats();
+  saveProgress();
+  nextBtn.style.display = 'inline-block';
+  startAutoTransition(isCorrect);
+};
+
+window.checkTrueFalse = function(selected, element) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentIndex];
+  const isCorrect = (selected === q.correct);
+  const allOpts = document.querySelectorAll('.option');
+  allOpts.forEach(opt => opt.classList.add('locked'));
+  
+  if (isCorrect) {
+    element.classList.add('correct');
+    score += (q.points || 10);
+    correctCount++;
+    showFeedback(true, q.explanation || '✅ إجابة صحيحة!');
+  } else {
+    element.classList.add('wrong');
+    const correctAns = q.correct === true ? 'صواب' : 'خطأ';
+    allOpts.forEach(opt => {
+      if (opt.innerText.includes(correctAns)) opt.classList.add('correct');
+    });
+    wrongCount++;
+    showFeedback(false, `❌ الإجابة الصحيحة: ${correctAns}<br>${q.explanation || ''}`);
+  }
+  updateStats();
+  saveProgress();
+  nextBtn.style.display = 'inline-block';
+  startAutoTransition(isCorrect);
+};
+
+window.checkMatching = function() {
+  if (answered) return;
+  const q = questions[currentIndex];
+  let allCorrect = true;
+  for (let i = 0; i < q.pairs.length; i++) {
+    const select = document.getElementById(`matchSelect_${i}`);
+    const selectedVal = parseInt(select.value);
+    if (selectedVal !== q.pairs[i].rightIndex) allCorrect = false;
+  }
+  answered = true;
+  if (allCorrect) {
+    score += (q.points || 10);
+    correctCount++;
+    showFeedback(true, q.explanation || '✅ جميع الوصلات صحيحة!');
+  } else {
+    wrongCount++;
+    let correctStr = '';
+    for (let i = 0; i < q.pairs.length; i++) {
+      correctStr += `${q.pairs[i].left} ← ${q.rightOptions[q.pairs[i].rightIndex]}\n`;
+    }
+    showFeedback(false, `❌ الإجابات الصحيحة:<br>${escapeHtml(correctStr)}<br>${q.explanation || ''}`);
+  }
+  updateStats();
+  saveProgress();
+  nextBtn.style.display = 'inline-block';
+  startAutoTransition(allCorrect);
+};
+
+function showFeedback(isCorrect, msg) {
+  const fb = document.getElementById('feedbackMsg');
+  fb.className = `feedback ${isCorrect ? 'success' : 'error'}`;
+  fb.innerHTML = msg;
+  fb.style.display = 'block';
+}
+
+function nextQuestion() {
+  clearAutoTimer();
+  currentIndex++;
+  if (currentIndex < totalQuestions) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+  saveProgress();
+}
+
+function showResult() {
+  clearAutoTimer();
+  clearProgress();
+  const percent = Math.round((correctCount / totalQuestions) * 100);
+  let msg = '';
+  if (percent >= 90) msg = '🏆 ممتاز! أنت نجم';
+  else if (percent >= 70) msg = '⭐ جيد جداً، واصل';
+  else if (percent >= 50) msg = '📖 جيد، راجع الأخطاء';
+  else msg = '💪 لا تيأس، المحاولة القادمة أفضل';
+  
+  container.innerHTML = `
+    <button class="back-btn" onclick="loadLessons('${currentUnitId}')">⬅️ العودة للدروس</button>
+    <div style="text-align:center;padding:30px;">
+      <div style="font-size:4rem;">🎓</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--primary);">${percent}%</div>
+      <div style="font-size:1.2rem;margin:15px;">${msg}</div>
+      <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+        <div>✅ صحيح: ${correctCount}</div>
+        <div>❌ خطأ: ${wrongCount}</div>
+        <div>⭐ نقاط: ${score}</div>
+      </div>
+    </div>
+  `;
+  nextBtn.style.display = 'none';
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function resetAndRestart() {
+  clearProgress();
+  quizActive = false;
+  loadLessons(currentUnitId);
+}
+
+// ============================================================
+// أحداث الأزرار
+// ============================================================
+function setActiveGrade(grade) {
+  gradeBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.grade === grade);
+  });
+}
+
+function setActiveSubject(subject) {
+  subjectBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.subject === subject);
+  });
+}
+
+gradeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentGrade = btn.dataset.grade;
+    setActiveGrade(currentGrade);
+    studyLink.href = `../Study/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    clearProgress();
+    loadUnits();
+  });
+});
+
+subjectBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentSubject = btn.dataset.subject;
+    setActiveSubject(currentSubject);
+    studyLink.href = `../Study/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    clearProgress();
+    loadUnits();
+  });
+});
+
+restartBtn.addEventListener('click', resetAndRestart);
+nextBtn.addEventListener('click', () => {
+  clearAutoTimer();
+  nextQuestion();
+});
+
+// ============================================================
+// بدء التشغيل
+// ============================================================
+studyLink.href = `../Study/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+loadUnits();
+</script>
+</body>
+</html>
