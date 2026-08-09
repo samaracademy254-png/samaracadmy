@@ -1,25 +1,12 @@
 {
   "name": "samar-academy",
   "version": "1.0.0",
-  "description": "سمر أكاديمي - منصة تعليمية مصرية للمناهج الدراسية (الابتدائي والإعدادي)",
+  "description": "سمر أكاديمي - منصة تعليمية مصرية",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/samaracademy254-png/samaracadmy"
-  },
-  "keywords": [
-    "education",
-    "egypt",
-    "school",
-    "learning",
-    "platform"
-  ],
-  "author": "Samar Academy",
-  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
