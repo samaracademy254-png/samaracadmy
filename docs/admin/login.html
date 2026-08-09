@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0A4D8C 0%, #062A4A 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-box h1 { color: #0A4D8C; text-align: center; margin-bottom: 10px; font-weight: 900; }
+        .login-box p { text-align: center; color: #64748B; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 5px; color: #1a2e1a; }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Cairo';
+            transition: .2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #0A4D8C;
+            box-shadow: 0 0 0 3px rgba(10,77,140,0.15);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: .3s;
+            font-family: 'Cairo';
+            background: #0A4D8C;
+            color: white;
+        }
+        .btn:hover { background: #062A4A; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(10,77,140,0.3); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .error-msg {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 12px;
+            display: none;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .loading-msg { text-align: center; color: #64748B; display: none; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>🔐 لوحة التحكم</h1>
+        <p>سمر أكاديمي - إدارة المحتوى</p>
+        <div id="errorMsg" class="error-msg">⚠️ كلمة المرور غير صحيحة</div>
+        <div id="loadingMsg" class="loading-msg">⏳ جاري التحقق...</div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>🔑 كلمة المرور</label>
+                <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+            </div>
+            <button type="submit" class="btn" id="loginBtn">📥 دخول</button>
+        </form>
+    </div>
+    <script>
+        const API_BASE = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const loadingMsg = document.getElementById('loadingMsg');
+            const loginBtn = document.getElementById('loginBtn');
+
+            errorMsg.style.display = 'none';
+            loadingMsg.style.display = 'block';
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ جاري...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/grades`, {
+                    headers: { 'Authorization': `Bearer ${password}` }
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('adminPassword', password);
+                    window.location.href = 'index.html';
+                } else if (response.status === 403) {
+                    errorMsg.textContent = '⚠️ كلمة المرور غير صحيحة. حاول مرة أخرى.';
+                    errorMsg.style.display = 'block';
+                } else {
+                    errorMsg.textContent = `⚠️ خطأ في الخادم (${response.status}). حاول مرة أخرى.`;
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('خطأ في الاتصال:', error);
+                errorMsg.textContent = '⚠️ فشل الاتصال بالخادم. تأكد من أن السيرفر يعمل.';
+                errorMsg.style.display = 'block';
+            } finally {
+                loadingMsg.style.display = 'none';
+                loginBtn.disabled = false;
+                loginBtn.textContent = '📥 دخول';
+            }
+        });
+    </script>
+</body>
+</html>

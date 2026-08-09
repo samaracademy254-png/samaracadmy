@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - أكاديمية الأستاذ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== أنماط عامة ===== */:root {
+  --primary: #0A4D8C; /* الأزرق المصري */
+  --primary-dark: #062A4A;
+  --primary-light: #D4E6F1;
+  --gold: #F4A261; /* لون مميز بدلاً من الذهبي */
+}
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f8fafc;
+            color: #1a2e1a;
+            min-height: 100vh;
+        }
+        /* ===== Sidebar ===== */
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 25px 20px;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        .sidebar .logo { font-size: 1.4rem; font-weight: 900; text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 20px; }
+        .sidebar .logo span { color: var(--gold); }
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+            margin-bottom: 4px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .sidebar .nav-item:hover, .sidebar .nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+        .sidebar .nav-item .icon { font-size: 1.3rem; width: 30px; text-align: center; }
+        .sidebar .logout {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 20px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: .2s;
+        }
+        .sidebar .logout:hover { color: #fca5a5; }
+        /* ===== Main ===== */
+        .main { margin-right: 260px; padding: 25px 30px; min-height: 100vh; }
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .main-header h1 { font-size: 1.8rem; color: var(--primary); }
+        .main-header .sub { color: var(--gray); font-size: 0.95rem; }
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--primary);
+        }
+        /* ===== Stats ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-card .number { font-size: 2.2rem; font-weight: 900; color: var(--primary); }
+        .stat-card .label { color: var(--gray); font-size: 0.9rem; }
+        .stat-card .icon { font-size: 2rem; margin-bottom: 5px; }
+        /* ===== Sections ===== */
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .section-header h2 { font-size: 1.4rem; color: var(--primary); }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+            font-family: 'Cairo';
+            font-size: 0.95rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,108,53,0.25); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #047857; }
+        .btn-outline { background: transparent; border: 2px solid var(--gray); color: var(--gray); }
+        .btn-outline:hover { background: var(--gray); color: white; }
+        .btn-sm { padding: 6px 16px; font-size: 0.85rem; }
+        .btn-gold { background: var(--gold); color: #78350f; }
+        .btn-gold:hover { background: #b8941f; }
+        /* ===== Tables ===== */
+        .table-wrap {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        .table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .table-wrap th {
+            background: var(--gray-light);
+            padding: 14px 16px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--gray);
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .table-wrap td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table-wrap tr:hover td { background: #fafbfc; }
+        .badge {
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-confirmed { background: #d1fae5; color: #065f46; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+        .badge-completed { background: #dbeafe; color: #1e40af; }
+        .badge-trial { background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; }
+        .actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+        .actions-cell .btn { padding: 4px 12px; font-size: 0.8rem; }
+        /* ===== Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal h3 { color: var(--primary); margin-bottom: 20px; }
+        .modal .form-group { margin-bottom: 16px; }
+        .modal .form-group label { display: block; font-weight: 700; margin-bottom: 4px; font-size: 0.9rem; }
+        .modal .form-group input,
+        .modal .form-group select,
+        .modal .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-size: 0.95rem;
+            transition: .2s;
+        }
+        .modal .form-group input:focus,
+        .modal .form-group select:focus,
+        .modal .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .modal .form-group textarea { min-height: 70px; resize: vertical; }
+        .modal .modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+        /* ===== Toast ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 14px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            animation: slideDown 0.3s ease;
+            max-width: 400px;
+        }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-info { background: var(--primary); }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+        /* ===== Responsive ===== */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-right: 0; padding: 15px; }
+            .hamburger { display: block; }
+        }
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .section-header { flex-direction: column; align-items: stretch; }
+            .table-wrap { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Sidebar ===== -->
+<div class="sidebar" id="sidebar">
+    <div class="logo">🏫 أكاديمية <span>الأستاذ</span></div>
+    <div class="nav-item active" data-section="dashboard"><span class="icon">📊</span> لوحة المعلومات</div>
+    <div class="nav-item" data-section="grades"><span class="icon">📚</span> الصفوف</div>
+    <div class="nav-item" data-section="subjects"><span class="icon">📖</span> المواد</div>
+    <div class="nav-item" data-section="units"><span class="icon">📂</span> الوحدات</div>
+    <div class="nav-item" data-section="lessons"><span class="icon">📝</span> الدروس</div>
+    <div class="nav-item" data-section="bookings"><span class="icon">📞</span> الحجوزات</div>
+    <div class="logout" id="logoutBtn">🚪 تسجيل الخروج</div>
+</div>
+
+<!-- ===== Main ===== -->
+<div class="main">
+    <div class="main-header">
+        <div>
+            <h1 id="pageTitle">لوحة المعلومات</h1>
+            <div class="sub" id="pageSub">مرحباً بك في لوحة تحكم أكاديمية الأستاذ</div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn">☰</button>
+    </div>
+
+    <!-- ===== Dashboard Section ===== -->
+    <div class="section active" id="section-dashboard">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="icon">🏫</div><div class="number" id="statGrades">0</div><div class="label">الصفوف</div></div>
+            <div class="stat-card"><div class="icon">📖</div><div class="number" id="statSubjects">0</div><div class="label">المواد</div></div>
+            <div class="stat-card"><div class="icon">📂</div><div class="number" id="statUnits">0</div><div class="label">الوحدات</div></div>
+            <div class="stat-card"><div class="icon">📝</div><div class="number" id="statLessons">0</div><div class="label">الدروس</div></div>
+            <div class="stat-card"><div class="icon">📞</div><div class="number" id="statBookings">0</div><div class="label">الحجوزات</div></div>
+            <div class="stat-card"><div class="icon">⏳</div><div class="number" id="statPending">0</div><div class="label">حجوزات معلقة</div></div>
+        </div>
+        <div style="background:white;border-radius:var(--radius);padding:25px;box-shadow:var(--shadow);border:1px solid #e2e8f0;">
+            <h3 style="color:var(--primary);margin-bottom:15px;">📋 آخر الحجوزات</h3>
+            <div id="recentBookings"><p style="color:var(--gray);">لا توجد حجوزات حتى الآن</p></div>
+        </div>
+    </div>
+
+    <!-- ===== Grades Section ===== -->
+    <div class="section" id="section-grades">
+        <div class="section-header">
+            <h2>📚 إدارة الصفوف</h2>
+            <button class="btn btn-primary" onclick="openModal('gradeModal')">+ إضافة صف</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>معرف الصف</th><th>اسم الصف</th><th>المواد</th><th>الإجراءات</th></tr></thead><tbody id="gradesTable"></tbody></table></div>
+    </div>
+
+    <!-- ===== Subjects ===== -->
+    <div class="section" id="section-subjects">
+        <div class="section-header">
+            <h2>📖 إدارة المواد</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select id="subjectGradeFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">جميع الصفوف</option></select>
+                <button class="btn btn-primary" onclick="openModal('subjectModal')">+ إضافة مادة</button>
+            </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>المادة</th><th>الصف</th><th>الوحدات</th><th>الإجراءات</th></tr></thead><tbody id="subjectsTable"></tbody></table></div>
+    </div>
+
+    <!-- ===== Units ===== -->
+    <div class="section" id="section-units">
+        <div class="section-header">
+            <h2>📂 إدارة الوحدات</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select id="unitGradeFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">الصف</option></select>
+                <select id="unitSubjectFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">المادة</option></select>
+                <button class="btn btn-primary" onclick="openModal('unitModal')">+ إضافة وحدة</button>
+            </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>الوحدة</th><th>المادة</th><th>الصف</th><th>الدروس</th><th>الإجراءات</th></tr></thead><tbody id="unitsTable"></tbody></table></div>
+    </div>
+
+    <!-- ===== Lessons ===== -->
+    <div class="section" id="section-lessons">
+        <div class="section-header">
+            <h2>📝 إدارة الدروس</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select id="lessonGradeFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">الصف</option></select>
+                <select id="lessonSubjectFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">المادة</option></select>
+                <select id="lessonUnitFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';"><option value="">الوحدة</option></select>
+                <button class="btn btn-primary" onclick="openModal('lessonModal')">+ إضافة درس</button>
+            </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>الدرس</th><th>الوحدة</th><th>المادة</th><th>الصف</th><th>الإجراءات</th></tr></thead><tbody id="lessonsTable"></tbody></table></div>
+    </div>
+
+    <!-- ===== Bookings ===== -->
+    <div class="section" id="section-bookings">
+        <div class="section-header">
+            <h2>📞 إدارة الحجوزات</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                <select id="bookingStatusFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';">
+                    <option value="">جميع الحالات</option>
+                    <option value="pending">معلقة</option>
+                    <option value="confirmed">مؤكدة</option>
+                    <option value="cancelled">ملغية</option>
+                    <option value="completed">منتهية</option>
+                </select>
+                <select id="bookingTypeFilter" style="padding:8px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';">
+                    <option value="">جميع الأنواع</option>
+                    <option value="regular">📚 عادي</option>
+                    <option value="trial">🆓 تجريبي</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الصف</th><th>المادة</th><th>النوع</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>رابط Meet</th><th>الإجراءات</th></tr></thead><tbody id="bookingsTable"></tbody></table></div>
+        
+        <!-- ===== Google Meet Management ===== -->
+        <div style="margin-top:20px;padding:20px;background:#f8fafc;border-radius:16px;border:1px solid #e2e8f0;">
+            <h4 style="color:var(--primary);margin-bottom:12px;">🔗 إدارة رابط Google Meet</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+                <select id="bookingSelect" onchange="selectBooking(this.value)" style="padding:10px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';flex:1;min-width:200px;">
+                    <option value="">اختر حجزاً...</option>
+                </select>
+                <input type="text" id="meetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx" style="flex:2;min-width:250px;padding:10px 14px;border:2px solid #e2e8f0;border-radius:12px;font-family:'Cairo';">
+                <button class="btn btn-primary" onclick="saveMeetLink()">💾 حفظ الرابط</button>
+            </div>
+            <div id="bookingDetails" style="margin-top:10px;font-size:0.9rem;color:var(--gray);"></div>
+            <input type="hidden" id="selectedBookingId">
+        </div>
+    </div>
+</div>
+
+<!-- ===== Modals ===== -->
+<!-- Grade Modal -->
+<div class="modal-overlay" id="gradeModal">
+    <div class="modal">
+        <h3>📚 إضافة صف جديد</h3>
+        <form id="gradeForm">
+            <div class="form-group"><label>معرف الصف (مثل: p4, p5, m1)</label><input type="text" id="gradeId" placeholder="مثال: p5" required></div>
+            <div class="form-group"><label>اسم الصف</label><input type="text" id="gradeName" placeholder="مثال: خامس ابتدائي" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('gradeModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Subject Modal -->
+<div class="modal-overlay" id="subjectModal">
+    <div class="modal">
+        <h3>📖 إضافة مادة جديدة</h3>
+        <form id="subjectForm">
+            <div class="form-group"><label>اختر الصف</label><select id="subjectGrade" required></select></div>
+            <div class="form-group"><label>اسم المادة</label><input type="text" id="subjectName" placeholder="مثال: رياضيات" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('subjectModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Unit Modal -->
+<div class="modal-overlay" id="unitModal">
+    <div class="modal">
+        <h3>📂 إضافة وحدة جديدة</h3>
+        <form id="unitForm">
+            <div class="form-group"><label>اختر الصف</label><select id="unitGrade" required></select></div>
+            <div class="form-group"><label>اختر المادة</label><select id="unitSubject" required></select></div>
+            <div class="form-group"><label>معرف الوحدة</label><input type="text" id="unitId" placeholder="مثال: unit1" required></div>
+            <div class="form-group"><label>اسم الوحدة</label><input type="text" id="unitName" placeholder="مثال: الوحدة الأولى: الأعداد" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('unitModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lesson Modal -->
+<div class="modal-overlay" id="lessonModal">
+    <div class="modal">
+        <h3>📝 إضافة درس جديد</h3>
+        <form id="lessonForm">
+            <div class="form-group"><label>اختر الصف</label><select id="lessonGrade" required></select></div>
+            <div class="form-group"><label>اختر المادة</label><select id="lessonSubject" required></select></div>
+            <div class="form-group"><label>اختر الوحدة</label><select id="lessonUnit" required></select></div>
+            <div class="form-group"><label>معرف الدرس</label><input type="text" id="lessonId" placeholder="مثال: lesson1" required></div>
+            <div class="form-group"><label>اسم الدرس</label><input type="text" id="lessonName" placeholder="مثال: الدرس الأول: تأسيس الدولة" required></div>
+            <div class="form-group"><label>رابط الفيديو (اختياري)</label><input type="text" id="lessonVideo" placeholder="https://www.youtube.com/embed/..."></div>
+            <div class="form-group"><label>ملخص الدرس (اختياري)</label><textarea id="lessonSummary" placeholder="ملخص مختصر للدرس..."></textarea></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('lessonModal')">إلغاء</button>
+                <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+//  أكاديمية الأستاذ - لوحة التحكم (Admin Panel) v2.0
+// ============================================================
+
+// ===== إعدادات المصادقة =====
+const API_BASE = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+const CORRECT_PASSWORD = 'admin123456';
+
+// قراءة كلمة المرور المخزنة
+let ADMIN_PASSWORD = localStorage.getItem('adminPassword');
+
+// التحقق من كلمة المرور
+if (!ADMIN_PASSWORD || ADMIN_PASSWORD !== CORRECT_PASSWORD) {
+    localStorage.removeItem('adminPassword');
+    alert('⚠️ كلمة المرور غير صحيحة. سيتم إعادة توجيهك إلى صفحة تسجيل الدخول.');
+    window.location.href = 'login.html';
+}
+
+// ===== متغيرات عامة =====
+let allBookings = [];
+let selectedBookingId = null;
+
+// ===== دوال مساعدة =====
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ADMIN_PASSWORD}`
+    };
+}
+
+async function fetchAPI(endpoint, options = {}) {
+    const defaultOptions = {
+        headers: getAuthHeaders()
+    };
+    const finalOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...(options.headers || {})
+        }
+    };
+    const response = await fetch(`${API_BASE}${endpoint}`, finalOptions);
+    return response;
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 4000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== دوال Google Meet =====
+function selectBooking(id) {
+    selectedBookingId = id;
+    const booking = allBookings.find(b => b.id === id);
+    if (booking) {
+        document.getElementById('selectedBookingId').value = id;
+        document.getElementById('meetLink').value = booking.meetLink || '';
+        document.getElementById('bookingDetails').innerHTML = `
+            <strong>الاسم:</strong> ${booking.name} |
+            <strong>الصف:</strong> ${booking.grade} |
+            <strong>المادة:</strong> ${booking.subject} |
+            <strong>التاريخ:</strong> ${booking.date} |
+            <strong>الوقت:</strong> ${booking.time}
+            ${booking.type === 'trial' ? ' | <span class="badge badge-trial">🆓 تجريبي</span>' : ''}
+        `;
+    }
+}
+
+async function saveMeetLink() {
+    const meetLink = document.getElementById('meetLink').value.trim();
+    if (!selectedBookingId) {
+        showToast('⚠️ يرجى اختيار حجز أولاً', 'error');
+        return;
+    }
+    if (!meetLink) {
+        showToast('⚠️ يرجى إدخال رابط Google Meet', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetchAPI(`/api/admin/bookings/${selectedBookingId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ 
+                status: 'confirmed',
+                meetLink: meetLink 
+            })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('✅ تم حفظ رابط الاجتماع بنجاح');
+            loadBookings();
+        } else {
+            showToast(result.message || 'فشل الحفظ', 'error');
+        }
+    } catch(e) {
+        showToast('خطأ في الحفظ', 'error');
+    }
+}
+
+// ===== التنقل بين الأقسام =====
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+        const section = this.dataset.section;
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + section).classList.add('active');
+        document.getElementById('pageTitle').textContent = this.textContent.trim();
+        document.getElementById('sidebar').classList.remove('open');
+        if (section === 'dashboard') loadDashboard();
+        else if (section === 'grades') loadGrades();
+        else if (section === 'subjects') loadSubjects();
+        else if (section === 'units') loadUnits();
+        else if (section === 'lessons') loadLessons();
+        else if (section === 'bookings') loadBookings();
+    });
+});
+
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('adminPassword');
+    window.location.href = 'login.html';
+});
+
+// ============================================================
+//  لوحة المعلومات (Dashboard)
+// ============================================================
+async function loadDashboard() {
+    try {
+        const res = await fetchAPI('/api/admin/stats');
+        if (!res.ok) throw new Error('فشل جلب الإحصائيات');
+        const result = await res.json();
+        if (result.success) {
+            const d = result.data;
+            document.getElementById('statGrades').textContent = d.totalGrades || 0;
+            document.getElementById('statSubjects').textContent = d.totalSubjects || 0;
+            document.getElementById('statUnits').textContent = d.totalUnits || 0;
+            document.getElementById('statLessons').textContent = d.totalLessons || 0;
+            document.getElementById('statBookings').textContent = d.totalBookings || 0;
+            document.getElementById('statPending').textContent = d.pendingBookings || 0;
+        }
+        const res2 = await fetchAPI('/api/admin/bookings');
+        const result2 = await res2.json();
+        if (result2.success && result2.data.length > 0) {
+            const recent = result2.data.slice(-5).reverse();
+            let html = '<div style="display:grid;gap:10px;">';
+            recent.forEach(b => {
+                const statusMap = { pending: 'معلقة', confirmed: 'مؤكدة', cancelled: 'ملغية', completed: 'منتهية' };
+                const statusClass = { pending: 'badge-pending', confirmed: 'badge-confirmed', cancelled: 'badge-cancelled', completed: 'badge-completed' };
+                const typeLabel = b.type === 'trial' ? '🆓 تجريبي' : '📚 عادي';
+                html += `<div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:12px;flex-wrap:wrap;gap:8px;">
+                    <span><strong>${b.name}</strong> - ${b.grade} - ${b.subject} <span style="font-size:0.7rem;color:var(--gray);">${typeLabel}</span></span>
+                    <span>${b.date} ${b.time}</span>
+                    <span class="badge ${statusClass[b.status]}">${statusMap[b.status] || b.status}</span>
+                </div>`;
+            });
+            html += '</div>';
+            document.getElementById('recentBookings').innerHTML = html;
+        } else {
+            document.getElementById('recentBookings').innerHTML = '<p style="color:var(--gray);">لا توجد حجوزات حتى الآن</p>';
+        }
+    } catch(e) {
+        console.error('Dashboard error:', e);
+        showToast('فشل تحميل لوحة المعلومات', 'error');
+    }
+}
+
+// ============================================================
+//  الحجوزات (Bookings)
+// ============================================================
+async function loadBookings() {
+    try {
+        const statusFilter = document.getElementById('bookingStatusFilter').value;
+        const typeFilter = document.getElementById('bookingTypeFilter').value;
+        
+        let url = '/api/admin/bookings';
+        const params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (typeFilter) params.append('type', typeFilter);
+        if (params.toString()) url += '?' + params.toString();
+        
+        const res = await fetchAPI(url);
+        const result = await res.json();
+        
+        if (result.success) {
+            allBookings = result.data;
+            // تحديث القائمة المنسدلة لـ Google Meet
+            const select = document.getElementById('bookingSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">اختر حجزاً...</option>';
+            result.data.forEach(b => {
+                const label = `${b.name} - ${b.date} ${b.time} (${b.type === 'trial' ? 'تجريبي' : 'عادي'})`;
+                select.innerHTML += `<option value="${b.id}">${label}</option>`;
+            });
+            select.value = currentVal;
+            
+            const tbody = document.getElementById('bookingsTable');
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--gray);">لا توجد حجوزات</td></tr>';
+                return;
+            }
+            
+            const statusMap = { pending: 'معلقة', confirmed: 'مؤكدة', cancelled: 'ملغية', completed: 'منتهية' };
+            const statusClass = { pending: 'badge-pending', confirmed: 'badge-confirmed', cancelled: 'badge-cancelled', completed: 'badge-completed' };
+            
+            let html = '';
+            result.data.forEach((b, i) => {
+                const typeLabel = b.type === 'trial' ? '<span class="badge badge-trial">🆓 تجريبي</span>' : '📚 عادي';
+                const meetLink = b.meetLink ? `<a href="${b.meetLink}" target="_blank" style="color:var(--primary);text-decoration:underline;">🔗 رابط</a>` : '—';
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td><strong>${b.name}</strong></td>
+                    <td>${b.phone}</td>
+                    <td>${b.grade}</td>
+                    <td>${b.subject}</td>
+                    <td>${typeLabel}</td>
+                    <td>${b.date}</td>
+                    <td>${b.time}</td>
+                    <td><span class="badge ${statusClass[b.status] || 'badge-pending'}">${statusMap[b.status] || b.status}</span></td>
+                    <td>${meetLink}</td>
+                    <td class="actions-cell">
+                        ${b.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="updateBooking('${b.id}','confirmed')">تأكيد</button>` : ''}
+                        ${b.status !== 'cancelled' && b.status !== 'completed' ? `<button class="btn btn-danger btn-sm" onclick="updateBooking('${b.id}','cancelled')">إلغاء</button>` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="deleteBooking('${b.id}')">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    } catch(e) {
+        console.error('Load bookings error:', e);
+        showToast('فشل تحميل الحجوزات', 'error');
+    }
+}
+
+async function updateBooking(id, status) {
+    try {
+        const res = await fetchAPI(`/api/admin/bookings/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast(`تم تحديث الحالة إلى ${status}`);
+            loadBookings();
+            loadDashboard();
+        } else {
+            showToast(result.message || 'فشل التحديث', 'error');
+        }
+    } catch(e) {
+        showToast('خطأ في التحديث', 'error');
+    }
+}
+
+async function deleteBooking(id) {
+    if (!confirm('حذف الحجز؟')) return;
+    try {
+        const res = await fetchAPI(`/api/admin/bookings/${id}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) {
+            showToast('تم حذف الحجز');
+            loadBookings();
+            loadDashboard();
+        } else {
+            showToast(result.message || 'فشل الحذف', 'error');
+        }
+    } catch(e) {
+        showToast('خطأ في الحذف', 'error');
+    }
+}
+
+// ============================================================
+//  الصفوف (Grades)
+// ============================================================
+async function loadGrades() {
+    try {
+        const res = await fetchAPI('/api/admin/grades');
+        const result = await res.json();
+        if (result.success) {
+            const tbody = document.getElementById('gradesTable');
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);">لا توجد صفوف</td></tr>';
+                return;
+            }
+            let html = '';
+            result.data.forEach((g, i) => {
+                html += `<tr><td>${i+1}</td><td><code>${g.id}</code></td><td>${g.name}</td><td>${g.subjects || 0}</td>
+                <td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="deleteGrade('${g.id}')">🗑️</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    } catch(e) { showToast('فشل تحميل الصفوف', 'error'); }
+}
+
+async function deleteGrade(id) {
+    if (!confirm(`هل أنت متأكد من حذف الصف ${id}؟`)) return;
+    try {
+        const res = await fetchAPI(`/api/admin/grades/${id}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) { showToast('تم حذف الصف'); loadGrades(); loadDashboard(); }
+        else showToast(result.message || 'فشل الحذف', 'error');
+    } catch(e) { showToast('خطأ في الحذف', 'error'); }
+}
+
+document.getElementById('gradeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('gradeId').value.trim();
+    const name = document.getElementById('gradeName').value.trim();
+    try {
+        const res = await fetchAPI('/api/admin/grades', {
+            method: 'POST',
+            body: JSON.stringify({ id, name })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('تم إضافة الصف');
+            closeModal('gradeModal');
+            this.reset();
+            loadGrades(); loadDashboard();
+        } else showToast(result.message || 'فشل الإضافة', 'error');
+    } catch(e) { showToast('خطأ في الإضافة', 'error'); }
+});
+
+// ============================================================
+//  المواد (Subjects)
+// ============================================================
+async function loadSubjects() {
+    try {
+        const gradesRes = await fetchAPI('/api/admin/grades');
+        const gradesResult = await gradesRes.json();
+        if (gradesResult.success) {
+            const filter = document.getElementById('subjectGradeFilter');
+            const currentVal = filter.value;
+            filter.innerHTML = '<option value="">جميع الصفوف</option>';
+            gradesResult.data.forEach(g => {
+                filter.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+            });
+            filter.value = currentVal;
+        }
+        const gradeFilter = document.getElementById('subjectGradeFilter').value;
+        let url = '/api/admin/subjects/all';
+        if (gradeFilter) url = `/api/admin/subjects/${gradeFilter}`;
+        const res = await fetchAPI(url);
+        const result = await res.json();
+        if (result.success) {
+            const tbody = document.getElementById('subjectsTable');
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--gray);">لا توجد مواد</td></tr>';
+                return;
+            }
+            let html = '';
+            result.data.forEach(item => {
+                html += `<tr><td><strong>${item.name}</strong></td><td>${item.grade || '-'}</td><td>${item.units || 0}</td>
+                <td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="deleteSubject('${item.gradeId}', '${item.name}')">🗑️</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    } catch(e) { showToast('فشل تحميل المواد', 'error'); }
+}
+
+async function deleteSubject(gradeId, subjectName) {
+    if (!confirm(`حذف مادة ${subjectName}؟`)) return;
+    try {
+        const res = await fetchAPI(`/api/admin/subjects/${gradeId}/${encodeURIComponent(subjectName)}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) { showToast('تم حذف المادة'); loadSubjects(); loadDashboard(); }
+        else showToast(result.message || 'فشل الحذف', 'error');
+    } catch(e) { showToast('خطأ في الحذف', 'error'); }
+}
+
+document.getElementById('subjectGradeFilter').addEventListener('change', loadSubjects);
+
+// ============================================================
+//  الوحدات (Units)
+// ============================================================
+async function loadUnits() {
+    try {
+        const gradesRes = await fetchAPI('/api/admin/grades');
+        const gradesResult = await gradesRes.json();
+        if (gradesResult.success) {
+            const filter = document.getElementById('unitGradeFilter');
+            const current = filter.value;
+            filter.innerHTML = '<option value="">جميع الصفوف</option>';
+            gradesResult.data.forEach(g => {
+                filter.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+            });
+            filter.value = current;
+        }
+        const grade = document.getElementById('unitGradeFilter').value;
+        const subject = document.getElementById('unitSubjectFilter').value;
+        let url = '/api/admin/units/all';
+        if (grade && subject) url = `/api/admin/units/${grade}/${encodeURIComponent(subject)}`;
+        const res = await fetchAPI(url);
+        const result = await res.json();
+        if (result.success) {
+            const tbody = document.getElementById('unitsTable');
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);">لا توجد وحدات</td></tr>';
+                return;
+            }
+            let html = '';
+            result.data.forEach(item => {
+                html += `<tr><td><strong>${item.name}</strong> <code>(${item.id})</code></td><td>${item.subject}</td><td>${item.grade}</td><td>${item.lessons || 0}</td>
+                <td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="deleteUnit('${item.gradeId}','${item.subjectName}','${item.id}')">🗑️</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    } catch(e) { showToast('فشل تحميل الوحدات', 'error'); }
+}
+
+async function deleteUnit(gradeId, subjectName, unitId) {
+    if (!confirm(`حذف الوحدة ${unitId}؟`)) return;
+    try {
+        const res = await fetchAPI(`/api/admin/units/${gradeId}/${encodeURIComponent(subjectName)}/${unitId}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) { showToast('تم حذف الوحدة'); loadUnits(); loadDashboard(); }
+        else showToast(result.message || 'فشل الحذف', 'error');
+    } catch(e) { showToast('خطأ في الحذف', 'error'); }
+}
+
+document.getElementById('unitGradeFilter').addEventListener('change', function() {
+    const grade = this.value;
+    const subjectFilter = document.getElementById('unitSubjectFilter');
+    if (grade) {
+        fetchAPI(`/api/admin/subjects/${grade}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = subjectFilter.value;
+                    subjectFilter.innerHTML = '<option value="">جميع المواد</option>';
+                    result.data.forEach(s => {
+                        subjectFilter.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+                    });
+                    subjectFilter.value = current;
+                }
+            });
+    } else {
+        subjectFilter.innerHTML = '<option value="">جميع المواد</option>';
+    }
+    loadUnits();
+});
+document.getElementById('unitSubjectFilter').addEventListener('change', loadUnits);
+
+// ============================================================
+//  الدروس (Lessons)
+// ============================================================
+async function loadLessons() {
+    try {
+        const gradesRes = await fetchAPI('/api/admin/grades');
+        const gradesResult = await gradesRes.json();
+        if (gradesResult.success) {
+            const filter = document.getElementById('lessonGradeFilter');
+            const current = filter.value;
+            filter.innerHTML = '<option value="">جميع الصفوف</option>';
+            gradesResult.data.forEach(g => {
+                filter.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+            });
+            filter.value = current;
+        }
+        const grade = document.getElementById('lessonGradeFilter').value;
+        const subject = document.getElementById('lessonSubjectFilter').value;
+        const unit = document.getElementById('lessonUnitFilter').value;
+        let url = '/api/admin/lessons/all';
+        if (grade && subject && unit) url = `/api/admin/lessons/${grade}/${encodeURIComponent(subject)}/${unit}`;
+        const res = await fetchAPI(url);
+        const result = await res.json();
+        if (result.success) {
+            const tbody = document.getElementById('lessonsTable');
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);">لا توجد دروس</td></tr>';
+                return;
+            }
+            let html = '';
+            result.data.forEach(item => {
+                html += `<tr><td><strong>${item.name}</strong> <code>(${item.id})</code></td><td>${item.unit}</td><td>${item.subject}</td><td>${item.grade}</td>
+                <td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="deleteLesson('${item.gradeId}','${item.subjectName}','${item.unitId}','${item.id}')">🗑️</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    } catch(e) { showToast('فشل تحميل الدروس', 'error'); }
+}
+
+async function deleteLesson(gradeId, subjectName, unitId, lessonId) {
+    if (!confirm(`حذف الدرس ${lessonId}؟`)) return;
+    try {
+        const res = await fetchAPI(`/api/admin/lessons/${gradeId}/${encodeURIComponent(subjectName)}/${unitId}/${lessonId}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) { showToast('تم حذف الدرس'); loadLessons(); loadDashboard(); }
+        else showToast(result.message || 'فشل الحذف', 'error');
+    } catch(e) { showToast('خطأ في الحذف', 'error'); }
+}
+
+document.getElementById('lessonGradeFilter').addEventListener('change', function() {
+    const grade = this.value;
+    const subjectFilter = document.getElementById('lessonSubjectFilter');
+    const unitFilter = document.getElementById('lessonUnitFilter');
+    if (grade) {
+        fetchAPI(`/api/admin/subjects/${grade}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = subjectFilter.value;
+                    subjectFilter.innerHTML = '<option value="">جميع المواد</option>';
+                    result.data.forEach(s => {
+                        subjectFilter.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+                    });
+                    subjectFilter.value = current;
+                }
+            });
+    } else {
+        subjectFilter.innerHTML = '<option value="">جميع المواد</option>';
+        unitFilter.innerHTML = '<option value="">جميع الوحدات</option>';
+    }
+    loadLessons();
+});
+document.getElementById('lessonSubjectFilter').addEventListener('change', function() {
+    const grade = document.getElementById('lessonGradeFilter').value;
+    const subject = this.value;
+    const unitFilter = document.getElementById('lessonUnitFilter');
+    if (grade && subject) {
+        fetchAPI(`/api/admin/units/${grade}/${encodeURIComponent(subject)}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = unitFilter.value;
+                    unitFilter.innerHTML = '<option value="">جميع الوحدات</option>';
+                    result.data.forEach(u => {
+                        unitFilter.innerHTML += `<option value="${u.id}">${u.name}</option>`;
+                    });
+                    unitFilter.value = current;
+                }
+            });
+    } else {
+        unitFilter.innerHTML = '<option value="">جميع الوحدات</option>';
+    }
+    loadLessons();
+});
+document.getElementById('lessonUnitFilter').addEventListener('change', loadLessons);
+
+// ============================================================
+//  نماذج الإضافة (Modals Forms)
+// ============================================================
+
+// Subject Form
+document.getElementById('subjectForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const gradeId = document.getElementById('subjectGrade').value;
+    const name = document.getElementById('subjectName').value.trim();
+    try {
+        const res = await fetchAPI('/api/admin/subjects', {
+            method: 'POST',
+            body: JSON.stringify({ gradeId, name })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('تم إضافة المادة');
+            closeModal('subjectModal');
+            this.reset();
+            loadSubjects(); loadDashboard();
+        } else showToast(result.message || 'فشل الإضافة', 'error');
+    } catch(e) { showToast('خطأ في الإضافة', 'error'); }
+});
+
+// Unit Form
+document.getElementById('unitForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const gradeId = document.getElementById('unitGrade').value;
+    const subjectName = document.getElementById('unitSubject').value;
+    const unitId = document.getElementById('unitId').value.trim();
+    const unitName = document.getElementById('unitName').value.trim();
+    try {
+        const res = await fetchAPI('/api/admin/units', {
+            method: 'POST',
+            body: JSON.stringify({ gradeId, subjectName, unitId, unitName })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('تم إضافة الوحدة');
+            closeModal('unitModal');
+            this.reset();
+            loadUnits(); loadDashboard();
+        } else showToast(result.message || 'فشل الإضافة', 'error');
+    } catch(e) { showToast('خطأ في الإضافة', 'error'); }
+});
+
+// Lesson Form
+document.getElementById('lessonForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const gradeId = document.getElementById('lessonGrade').value;
+    const subjectName = document.getElementById('lessonSubject').value;
+    const unitId = document.getElementById('lessonUnit').value;
+    const lessonId = document.getElementById('lessonId').value.trim();
+    const lessonName = document.getElementById('lessonName').value.trim();
+    const videoUrl = document.getElementById('lessonVideo').value.trim();
+    const summary = document.getElementById('lessonSummary').value.trim();
+    try {
+        const res = await fetchAPI('/api/admin/lessons', {
+            method: 'POST',
+            body: JSON.stringify({ gradeId, subjectName, unitId, lessonId, lessonName, videoUrl, summary })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('تم إضافة الدرس');
+            closeModal('lessonModal');
+            this.reset();
+            loadLessons(); loadDashboard();
+        } else showToast(result.message || 'فشل الإضافة', 'error');
+    } catch(e) { showToast('خطأ في الإضافة', 'error'); }
+});
+
+// ============================================================
+//  تهيئة الفلاتر في النماذج
+// ============================================================
+async function populateGradeSelects() {
+    try {
+        const res = await fetchAPI('/api/admin/grades');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        
+        if (result.success && result.data.length > 0) {
+            const selects = ['subjectGrade', 'unitGrade', 'lessonGrade'];
+            selects.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const current = sel.value;
+                sel.innerHTML = '<option value="">اختر الصف</option>';
+                result.data.forEach(g => {
+                    const selected = g.id === current ? 'selected' : '';
+                    sel.innerHTML += `<option value="${g.id}" ${selected}>${g.name}</option>`;
+                });
+                if (current && !result.data.find(g => g.id === current)) {
+                    sel.value = result.data[0]?.id || '';
+                }
+            });
+        } else {
+            console.warn('لا توجد صفوف لعرضها في الفلاتر');
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل قائمة الصفوف:', error);
+        showToast('فشل تحميل قائمة الصفوف', 'error');
+    }
+}
+
+document.getElementById('unitGrade').addEventListener('change', function() {
+    const grade = this.value;
+    const subSelect = document.getElementById('unitSubject');
+    if (grade) {
+        fetchAPI(`/api/admin/subjects/${grade}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = subSelect.value;
+                    subSelect.innerHTML = '<option value="">اختر المادة</option>';
+                    result.data.forEach(s => {
+                        subSelect.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+                    });
+                    subSelect.value = current;
+                }
+            });
+    } else {
+        subSelect.innerHTML = '<option value="">اختر المادة</option>';
+    }
+});
+
+document.getElementById('lessonGrade').addEventListener('change', function() {
+    const grade = this.value;
+    const subSelect = document.getElementById('lessonSubject');
+    const unitSelect = document.getElementById('lessonUnit');
+    if (grade) {
+        fetchAPI(`/api/admin/subjects/${grade}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = subSelect.value;
+                    subSelect.innerHTML = '<option value="">اختر المادة</option>';
+                    result.data.forEach(s => {
+                        subSelect.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+                    });
+                    subSelect.value = current;
+                }
+            });
+    } else {
+        subSelect.innerHTML = '<option value="">اختر المادة</option>';
+        unitSelect.innerHTML = '<option value="">اختر الوحدة</option>';
+    }
+});
+
+document.getElementById('lessonSubject').addEventListener('change', function() {
+    const grade = document.getElementById('lessonGrade').value;
+    const subject = this.value;
+    const unitSelect = document.getElementById('lessonUnit');
+    if (grade && subject) {
+        fetchAPI(`/api/admin/units/${grade}/${encodeURIComponent(subject)}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    const current = unitSelect.value;
+                    unitSelect.innerHTML = '<option value="">اختر الوحدة</option>';
+                    result.data.forEach(u => {
+                        unitSelect.innerHTML += `<option value="${u.id}">${u.name}</option>`;
+                    });
+                    unitSelect.value = current;
+                }
+            });
+    } else {
+        unitSelect.innerHTML = '<option value="">اختر الوحدة</option>';
+    }
+});
+
+// ============================================================
+//  بدء التشغيل
+// ============================================================
+(async function() {
+    await populateGradeSelects();
+    await loadDashboard();
+
+    // تحديث تلقائي كل 30 ثانية
+    setInterval(() => {
+        const active = document.querySelector('.section.active');
+        if (active) {
+            const id = active.id.replace('section-', '');
+            if (id === 'dashboard') loadDashboard();
+            else if (id === 'bookings') loadBookings();
+        }
+    }, 30000);
+})();
+
+// ===== ربط الفلاتر =====
+document.getElementById('bookingStatusFilter').addEventListener('change', loadBookings);
+document.getElementById('bookingTypeFilter').addEventListener('change', loadBookings);
+
+// ===== إغلاق المودالات عند النقر خارجها =====
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('open');
+        }
+    });
+});
+</script>
+</body>
+</html>

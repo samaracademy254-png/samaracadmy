@@ -1,0 +1,22 @@
+{
+  "p5": {
+    "subjects": {
+      "علوم": {
+        "units": [
+          {
+            "id": "unit3",
+            "name": "الامطار",
+            "lessons": [
+              {
+                "id": "lesson1",
+                "name": "الامطار والسحب",
+                "videoUrl": "",
+                "summary": ""
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

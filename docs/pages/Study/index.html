@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أكاديمية الأستاذ - شرح الدروس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary: #006C35;
+  --primary-light: #E8F5E9;
+  --gold: #C8A44D;
+  --gray: #64748B;
+  --white: #FFFFFF;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+body {
+  font-family: 'Cairo', sans-serif;
+  background: #F8FAF8;
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 30px;
+}
+.header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #E8F0E8;
+  margin-bottom: 25px;
+}
+.header h1 { color: var(--primary); font-weight: 900; font-size: 1.8rem; }
+.header .subtitle { color: var(--gray); font-size: 1rem; }
+
+/* أزرار الصفوف والمواد */
+.grade-selector, .subject-selector {
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 12px;
+}
+.grade-btn, .subject-btn {
+  background: #e2e8f0; border: none; color: #475569;
+  padding: 6px 16px; border-radius: 30px; font-weight: bold;
+  cursor: pointer; transition: .2s; font-size: 0.9rem;
+  font-family: 'Cairo';
+}
+.grade-btn.active, .grade-btn:hover,
+.subject-btn.active, .subject-btn:hover {
+  background: var(--primary); color: white;
+}
+
+/* بطاقات الوحدات والدروس */
+.grid-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px; margin-top: 20px;
+}
+.card-item {
+  background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+  padding: 20px 15px; cursor: pointer; transition: .2s;
+  text-align: center; font-weight: 700;
+}
+.card-item:hover {
+  border-color: var(--primary); background: #f0fdf4;
+  transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+.card-item .icon { font-size: 2.5rem; margin-bottom: 8px; }
+.card-item .sub { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
+
+.back-btn {
+  background: var(--gray); color: white; border: none;
+  padding: 8px 24px; border-radius: 30px; cursor: pointer;
+  font-weight: 700; font-family: 'Cairo'; margin-bottom: 15px;
+  transition: .2s;
+}
+.back-btn:hover { background: #475569; }
+
+/* محتوى الشرح */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  background: #1a1a2e;
+}
+.video-container iframe {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; border: none;
+}
+.summary-box {
+  background: var(--primary-light);
+  padding: 25px;
+  border-radius: 16px;
+  border-right: 5px solid var(--primary);
+  text-align: right;
+  line-height: 1.9;
+  font-size: 1.05rem;
+  color: #1a2e1a;
+}
+.summary-box h3 { color: var(--primary); margin-bottom: 10px; font-weight: 900; }
+
+.actions {
+  display: flex; gap: 15px; margin-top: 25px;
+  justify-content: center; flex-wrap: wrap;
+}
+.btn {
+  padding: 12px 30px; border: none; border-radius: 30px;
+  font-weight: 700; font-size: 1rem; cursor: pointer;
+  transition: all 0.3s ease; text-decoration: none;
+  display: inline-block; font-family: 'Cairo';
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,108,53,0.3); }
+.btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+.btn-outline:hover { background: var(--primary); color: white; }
+.btn-success { background: #059669; color: white; }
+.btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(5,150,105,0.3); }
+
+.loading { text-align: center; padding: 50px; color: var(--gray); }
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .container { padding: 15px; }
+  .header h1 { font-size: 1.4rem; }
+  .summary-box { font-size: 0.95rem; padding: 18px; }
+  .grid-cards { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📖 محرك الشرح التعليمي</h1>
+    <div class="subtitle" id="lessonInfo">اختر الصف والمادة</div>
+    <div class="grade-selector" id="gradeSelector">
+      <button data-grade="p4" class="grade-btn">رابع</button>
+      <button data-grade="p5" class="grade-btn active">خامس</button>
+      <button data-grade="p6" class="grade-btn">سادس</button>
+      <button data-grade="m1" class="grade-btn">أول متوسط</button>
+      <button data-grade="m2" class="grade-btn">ثاني متوسط</button>
+      <button data-grade="m3" class="grade-btn">ثالث متوسط</button>
+    </div>
+    <div class="subject-selector" id="subjectSelector">
+      <button data-subject="science" class="subject-btn">🔬 علوم</button>
+      <button data-subject="social" class="subject-btn active">🌍 اجتماعيات</button>
+      <button data-subject="math" class="subject-btn">📐 رياضيات</button>
+    </div>
+  </div>
+
+  <div id="contentArea">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>⏳ جاري تحميل الوحدات...</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="../../index.html" class="btn btn-outline">🏠 الرئيسية</a>
+    <a href="../Home/index.html" id="quizLink" class="btn btn-success">📝 الذهاب للاختبار</a>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// حالة التطبيق
+// ============================================================
+let currentGrade = 'p5';
+let currentSubject = 'social';
+let currentUnitId = null;
+let currentLessonId = null;
+
+const contentArea = document.getElementById('contentArea');
+const gradeBtns = document.querySelectorAll('.grade-btn');
+const subjectBtns = document.querySelectorAll('.subject-btn');
+const quizLink = document.getElementById('quizLink');
+
+// ============================================================
+// دوال عرض الوحدات والدروس
+// ============================================================
+async function loadUnits() {
+  contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الوحدات...</p></div>';
+  
+  try {
+    const res = await fetch('../../data/units.json');
+    if (!res.ok) throw new Error('units.json غير موجود');
+    const data = await res.json();
+    const units = data[currentGrade]?.[currentSubject]?.units || [];
+    
+    if (!units.length) {
+      contentArea.innerHTML = '<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد وحدات لهذه المادة</div>';
+      return;
+    }
+
+    let html = `
+      <div style="margin-bottom:15px;">
+        <h3 style="color:var(--primary);">📚 اختر الوحدة الدراسية</h3>
+        <p style="color:var(--gray);font-size:0.9rem;">${currentGrade} - ${currentSubject}</p>
+      </div>
+      <div class="grid-cards">
+    `;
+    
+    units.forEach(unit => {
+      html += `
+        <div class="card-item" onclick="loadLessons('${unit.id}')">
+          <div class="icon">📖</div>
+          <div>${unit.name}</div>
+          <div class="sub">${unit.lessons} دروس</div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    contentArea.innerHTML = html;
+    
+  } catch(e) {
+    console.error(e);
+    contentArea.innerHTML = `<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل تحميل الوحدات: ${e.message}</div>`;
+  }
+}
+
+window.loadLessons = async function(unitId) {
+  currentUnitId = unitId;
+  contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدروس...</p></div>';
+  
+  try {
+    let lessons = [];
+    const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/lessons.json`;
+    const res = await fetch(path);
+    
+    if (res.ok) {
+      const data = await res.json();
+      lessons = data.lessons || [];
+    } else {
+      let i = 1;
+      while (true) {
+        try {
+          const testPath = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/lesson${i}.json`;
+          const testRes = await fetch(testPath);
+          if (!testRes.ok) break;
+          lessons.push({ id: `lesson${i}`, name: `الدرس ${i}` });
+          i++;
+        } catch { break; }
+      }
+    }
+    
+    if (!lessons.length) {
+      contentArea.innerHTML = `
+        <button class="back-btn" onclick="loadUnits()">⬅️ العودة للوحدات</button>
+        <div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد دروس في هذه الوحدة</div>
+      `;
+      return;
+    }
+
+    let html = `
+      <button class="back-btn" onclick="loadUnits()">⬅️ العودة للوحدات</button>
+      <h3 style="color:var(--primary);">📖 اختر الدرس</h3>
+      <div class="grid-cards">
+    `;
+    
+    lessons.forEach((lesson, idx) => {
+      const lessonId = lesson.id || `lesson${idx+1}`;
+      html += `
+        <div class="card-item" onclick="loadLessonContent('${unitId}', '${lessonId}')">
+          <div class="icon">📺</div>
+          <div>${lesson.name}</div>
+          <div class="sub">شرح + ملخص</div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    contentArea.innerHTML = html;
+    
+  } catch(e) {
+    console.error(e);
+    contentArea.innerHTML = `<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل تحميل الدروس: ${e.message}</div>`;
+  }
+};
+
+// ============================================================
+// عرض محتوى الدرس
+// ============================================================window.loadLessonContent = async function(unitId, lessonId) {
+  currentUnitId = unitId;
+  currentLessonId = lessonId;
+  contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل محتوى الدرس...</p></div>';
+  
+  const API_BASE = 'https://7i7rnuyfotq3-production-xopv2y50.europe-west1.suga.run';
+  const path = `${API_BASE}/api/study/${currentGrade}/${currentSubject}/${unitId}/${lessonId}`;
+  
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`HTTP ${res.status} - الدرس غير موجود`);
+    const data = await res.json();
+    
+    let html = `
+      <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+      <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
+    `;
+    
+    if (data.videoUrl) {
+      html += `
+        <div class="video-container">
+          <iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="background:#f0f4f0;padding:30px;text-align:center;border-radius:16px;margin-bottom:20px;">
+          <p style="font-size:1.2rem;color:#64748B;">📺 لا يوجد فيديو متاح لهذا الدرس حالياً.</p>
+        </div>
+      `;
+    }
+    
+    html += `
+      <div class="summary-box">
+        <h3>📋 الملخص المكتوب</h3>
+        <p>${data.summary || 'لم يتم إضافة ملخص بعد.'}</p>
+      </div>
+    `;
+    
+    contentArea.innerHTML = html;
+    
+  } catch(e) {
+    console.error(e);
+    contentArea.innerHTML = `
+      <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+      <div style="color:#dc2626;padding:20px;text-align:center;">
+        ⚠️ فشل تحميل محتوى الدرس:<br>${e.message}<br><br>
+        تأكد من وجود الملف: ${path}
+      </div>
+    `;
+  }
+
+
+// ============================================================
+// أحداث الأزرار
+// ============================================================
+function setActiveGrade(grade) {
+  gradeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.grade === grade));
+}
+
+function setActiveSubject(subject) {
+  subjectBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.subject === subject));
+}
+
+gradeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentGrade = btn.dataset.grade;
+    setActiveGrade(currentGrade);
+    quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    loadUnits();
+  });
+});
+
+subjectBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentSubject = btn.dataset.subject;
+    setActiveSubject(currentSubject);
+    quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    loadUnits();
+  });
+});
+
+// ============================================================
+// بدء التشغيل
+// ============================================================
+// قراءة المعاملات من الرابط
+const urlParams = new URLSearchParams(window.location.search);
+const g = urlParams.get('grade');
+const s = urlParams.get('subject');
+if (g) currentGrade = g;
+if (s) currentSubject = s;
+
+setActiveGrade(currentGrade);
+setActiveSubject(currentSubject);
+quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+document.getElementById('lessonInfo').textContent = `${currentGrade} - ${currentSubject}`;
+loadUnits();
+</script>
+</body>
+</html>
