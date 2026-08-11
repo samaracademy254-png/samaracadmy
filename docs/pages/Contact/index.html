@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التواصل وحجز الدروس - سمر أكاديمي</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/utils/security.js" defer></script>
+    <script src="../../assets/js/services/api.service.js" defer></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
@@ -282,20 +284,13 @@
 </div>
 
 <script>
-    const API_URL = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
-
     document.getElementById('bookingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
         const submitBtn = document.getElementById('submitBtn');
         const successMsg = document.getElementById('successMsg');
         const errorMsg = document.getElementById('errorMsg');
-        
-        successMsg.style.display = 'none';
-        errorMsg.style.display = 'none';
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ جاري الإرسال...';
+        successMsg.style.display = 'none'; errorMsg.style.display = 'none';
+        submitBtn.disabled = true; submitBtn.textContent = '⏳ جاري الإرسال...';
         
         const data = {
             name: document.getElementById('name').value.trim(),
@@ -309,14 +304,8 @@
         };
         
         try {
-            const response = await fetch(`${API_URL}/api/booking`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            
+            const response = await ApiService.createBooking(data);
             const result = await response.json();
-            
             if (result.success) {
                 successMsg.style.display = 'block';
                 document.getElementById('bookingForm').reset();
@@ -325,13 +314,11 @@
                 errorMsg.style.display = 'block';
             }
         } catch (error) {
-            errorMsg.textContent = '⚠️ فشل الاتصال بالخادم. تأكد من أن السيرفر يعمل.';
+            errorMsg.textContent = '⚠️ فشل الاتصال بالخادم.';
             errorMsg.style.display = 'block';
-            console.error('Error:', error);
+            console.error(error);
         }
-        
-        submitBtn.disabled = false;
-        submitBtn.textContent = '📩 إرسال طلب الحجز';
+        submitBtn.disabled = false; submitBtn.textContent = '📩 إرسال طلب الحجز';
     });
     
     const today = new Date();

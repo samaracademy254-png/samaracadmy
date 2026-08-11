@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - سمر أكاديمي</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/utils/security.js" defer></script>
+    <script src="../../assets/js/services/api.service.js" defer></script>
     <style>
         /* ===== أنماط عامة ===== */
         * {
@@ -782,20 +784,15 @@
 
 <script>
     // ============================================================
-    //  سمر أكاديمي - لوحة التحكم (Admin Panel) v2.0
+    //  سمر أكاديمي - لوحة التحكم (Admin Panel) v3.0 - Consultant Build
     // ============================================================
 
     // ===== إعدادات المصادقة =====
     const API_BASE = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
-    const CORRECT_PASSWORD = 'admin123456';
 
-    // قراءة كلمة المرور المخزنة
-    let ADMIN_PASSWORD = localStorage.getItem('adminPassword');
-
-    // التحقق من كلمة المرور
-    if (!ADMIN_PASSWORD || ADMIN_PASSWORD !== CORRECT_PASSWORD) {
-        localStorage.removeItem('adminPassword');
-        alert('⚠️ كلمة المرور غير صحيحة. سيتم إعادة توجيهك إلى صفحة تسجيل الدخول.');
+    // التحقق من صلاحية الدخول باستخدام SecurityUtils
+    if (!SecurityUtils.isAuthenticated()) {
+        alert('⚠️ جلسة غير صالحة. سيتم إعادة توجيهك إلى تسجيل الدخول.');
         window.location.href = 'login.html';
     }
 
@@ -805,26 +802,22 @@
 
     // ===== دوال مساعدة =====
     function getAuthHeaders() {
+        const token = SecurityUtils.getAuthToken();
         return {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ADMIN_PASSWORD}`
+            'Authorization': `Bearer ${token}`
         };
     }
 
+    // دالة API الموحدة (تستدعي ApiService.request)
     async function fetchAPI(endpoint, options = {}) {
-        const defaultOptions = {
-            headers: getAuthHeaders()
-        };
-        const finalOptions = {
-            ...defaultOptions,
-            ...options,
-            headers: {
-                ...defaultOptions.headers,
-                ...(options.headers || {})
-            }
-        };
-        const response = await fetch(`${API_BASE}${endpoint}`, finalOptions);
-        return response;
+        try {
+            // نمرر الطلب إلى ApiService المركزي
+            return await ApiService.request(endpoint, options);
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
     }
 
     function showToast(message, type = 'success') {
@@ -918,8 +911,9 @@
         document.getElementById('sidebar').classList.toggle('open');
     });
 
+    // تسجيل الخروج الآمن
     document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('adminPassword');
+        SecurityUtils.setAuthToken(null); // حذف التوكن
         window.location.href = 'login.html';
     });
 
@@ -998,7 +992,6 @@
 
             if (result.success) {
                 allBookings = result.data;
-                // تحديث القائمة المنسدلة لـ Google Meet
                 const select = document.getElementById('bookingSelect');
                 const currentVal = select.value;
                 select.innerHTML = '<option value="">اختر حجزاً...</option>';
@@ -1653,7 +1646,6 @@
         await populateGradeSelects();
         await loadDashboard();
 
-        // تحديث تلقائي كل 30 ثانية
         setInterval(() => {
             const active = document.querySelector('.section.active');
             if (active) {
@@ -1664,11 +1656,9 @@
         }, 30000);
     })();
 
-    // ===== ربط الفلاتر =====
     document.getElementById('bookingStatusFilter').addEventListener('change', loadBookings);
     document.getElementById('bookingTypeFilter').addEventListener('change', loadBookings);
 
-    // ===== إغلاق المودالات عند النقر خارجها =====
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', function(e) {
             if (e.target === this) {
