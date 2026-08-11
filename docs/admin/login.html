@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/utils/security.js" defer></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
@@ -84,7 +85,9 @@
             <button type="submit" class="btn" id="loginBtn">📥 دخول</button>
         </form>
     </div>
+
     <script>
+        // استخدام وحدة الأمان الموحدة
         const API_BASE = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -105,9 +108,9 @@
                 });
 
                 if (response.ok) {
-                    localStorage.setItem('adminPassword', password);
+                    SecurityUtils.setAuthToken(password);
                     window.location.href = 'index.html';
-                } else if (response.status === 403) {
+                } else if (response.status === 403 || response.status === 401) {
                     errorMsg.textContent = '⚠️ كلمة المرور غير صحيحة. حاول مرة أخرى.';
                     errorMsg.style.display = 'block';
                 } else {

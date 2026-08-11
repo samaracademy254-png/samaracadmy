@@ -1,3 +1,6 @@
+// backend/services/bookingService.js
+// خدمة الحجوزات - الإصدار التفاعلي الكامل (V3.0)
+
 const fs = require('fs');
 const path = require('path');
 const constants = require('../config/constants');
@@ -38,7 +41,7 @@ function saveBookings(bookings) {
 }
 
 /**
- * إضافة حجز جديد (يدعم الحصص التجريبية)
+ * إضافة حجز جديد (يدعم الحصص التجريبية والعادية)
  */
 function addBooking(bookingData) {
   const bookings = getBookings();
@@ -54,12 +57,15 @@ function addBooking(bookingData) {
     name: bookingData.name,
     phone: bookingData.phone,
     grade: bookingData.grade,
+    gradeName: bookingData.gradeName || bookingData.grade,
     subject: bookingData.subject,
+    subjectName: bookingData.subjectName || bookingData.subject,
     date: bookingData.date,
     time: bookingData.time,
     notes: bookingData.notes || '',
     type: isTrial ? 'trial' : 'regular',
     status: 'pending',
+    source: bookingData.source || 'telegram', // لتتبع مصدر الحجز
     meetLink: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -68,32 +74,49 @@ function addBooking(bookingData) {
   bookings.push(newBooking);
   saveBookings(bookings);
   
-  console.log(`✅ تم إضافة حجز ${isTrial ? '🆓 تجريبي' : '📚 عادي'}: ${id}`);
+  console.log(`✅ تم إضافة حجز ${isTrial ? '🆓 تجريبي' : '📚 عادي'} (${id}) من مصدر: ${newBooking.source}`);
   return newBooking;
+}
+
+/**
+ * جلب حجز بواسطة المعرف
+ */
+function getBookingById(id) {
+  const bookings = getBookings();
+  return bookings.find(b => b.id === id) || null;
 }
 
 /**
  * تحديث حالة الحجز (مع دعم Google Meet)
  */
-function updateBookingStatus(id, status, meetLink = null) {
+function updateBooking(id, updates) {
   const bookings = getBookings();
   const index = bookings.findIndex(b => b.id === id);
   
   if (index === -1) return null;
   
-  bookings[index].status = status;
-  bookings[index].updatedAt = new Date().toISOString();
-  
-  if (meetLink) {
-    bookings[index].meetLink = meetLink;
-  }
+  // دمج التحديثات
+  bookings[index] = {
+    ...bookings[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
   
   saveBookings(bookings);
   return bookings[index];
 }
 
 /**
- * جلب حجوزات اليوم
+ * تحديث حالة الحجز (دالة مختصرة للتوافق مع الكود القديم)
+ */
+function updateBookingStatus(id, status, meetLink = null) {
+  const updates = { status };
+  if (meetLink) updates.meetLink = meetLink;
+  return updateBooking(id, updates);
+}
+
+/**
+ * جلب حجوزات اليوم المؤكدة
  */
 function getTodayBookings() {
   const bookings = getBookings();
@@ -109,10 +132,25 @@ function getTrialBookings() {
   return bookings.filter(b => b.type === 'trial');
 }
 
+/**
+ * حذف حجز
+ */
+function deleteBooking(id) {
+  let bookings = getBookings();
+  const initialLength = bookings.length;
+  bookings = bookings.filter(b => b.id !== id);
+  if (bookings.length === initialLength) return false;
+  saveBookings(bookings);
+  return true;
+}
+
 module.exports = {
   getBookings,
+  getBookingById,
   addBooking,
+  updateBooking,
   updateBookingStatus,
   getTodayBookings,
-  getTrialBookings
+  getTrialBookings,
+  deleteBooking
 };
