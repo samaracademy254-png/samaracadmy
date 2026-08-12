@@ -1,5 +1,5 @@
 // backend/services/bookingService.js
-// خدمة الحجوزات - الإصدار التفاعلي الكامل (V3.0)
+// خدمة الحجوزات - الإصدار المتكامل (V3.0) لدعم البوت التفاعلي
 
 const fs = require('fs');
 const path = require('path');
@@ -65,7 +65,7 @@ function addBooking(bookingData) {
     notes: bookingData.notes || '',
     type: isTrial ? 'trial' : 'regular',
     status: 'pending',
-    source: bookingData.source || 'telegram', // لتتبع مصدر الحجز
+    source: bookingData.source || 'telegram',
     meetLink: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -87,7 +87,7 @@ function getBookingById(id) {
 }
 
 /**
- * تحديث حالة الحجز (مع دعم Google Meet)
+ * تحديث حجز (عام)
  */
 function updateBooking(id, updates) {
   const bookings = getBookings();
@@ -95,7 +95,6 @@ function updateBooking(id, updates) {
   
   if (index === -1) return null;
   
-  // دمج التحديثات
   bookings[index] = {
     ...bookings[index],
     ...updates,
@@ -107,7 +106,7 @@ function updateBooking(id, updates) {
 }
 
 /**
- * تحديث حالة الحجز (دالة مختصرة للتوافق مع الكود القديم)
+ * تحديث حالة الحجز (مع دعم Google Meet)
  */
 function updateBookingStatus(id, status, meetLink = null) {
   const updates = { status };
