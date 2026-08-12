@@ -1,5 +1,5 @@
 // backend/services/telegramService.js
-// بوت تليجرام التفاعلي - أكاديمية سمر (V3.0)
+// بوت تليجرام التفاعلي - سمر أكاديمي (V3.0)
 // يقوم بالحجز مباشرة داخل التليجرام بدون الحاجة لفتح المتصفح
 
 const { Telegraf, Markup } = require('telegraf');
@@ -7,7 +7,6 @@ const constants = require('../config/constants');
 const bookingService = require('./bookingService');
 
 // ===== متغيرات الجلسات (لتخزين بيانات المستخدم المؤقتة) =====
-// المفتاح: chatId، القيمة: كائن يحتوي على خطوة المستخدم وبياناته
 const sessions = new Map();
 
 // ===== بيانات ثابتة (يمكن جلبها من API مستقبلاً) =====
@@ -31,78 +30,55 @@ const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '14:00', '15:00
 
 // ===== دوال مساعدة للواجهة =====
 
-/** بناء أزرار الصفوف (Inline) */
 function buildGradeKeyboard() {
-  const buttons = GRADES.map(g => 
-    Markup.button.callback(g.name, `grade_${g.id}`)
-  );
-  // تقسيم الأزرار إلى صفوف (2 في كل صف)
+  const buttons = GRADES.map(g => Markup.button.callback(g.name, `grade_${g.id}`));
   const rows = [];
-  for (let i = 0; i < buttons.length; i += 2) {
-    rows.push(buttons.slice(i, i + 2));
-  }
+  for (let i = 0; i < buttons.length; i += 2) rows.push(buttons.slice(i, i + 2));
   return Markup.inlineKeyboard(rows);
 }
 
-/** بناء أزرار المواد (Inline) */
 function buildSubjectKeyboard() {
-  const buttons = SUBJECTS.map(s => 
-    Markup.button.callback(s.name, `subject_${s.id}`)
-  );
+  const buttons = SUBJECTS.map(s => Markup.button.callback(s.name, `subject_${s.id}`));
   const rows = [];
-  for (let i = 0; i < buttons.length; i += 2) {
-    rows.push(buttons.slice(i, i + 2));
-  }
+  for (let i = 0; i < buttons.length; i += 2) rows.push(buttons.slice(i, i + 2));
   return Markup.inlineKeyboard(rows);
 }
 
-/** بناء أزرار الأوقات (Inline) */
 function buildTimeKeyboard() {
-  const buttons = TIME_SLOTS.map(t => 
-    Markup.button.callback(t, `time_${t}`)
-  );
+  const buttons = TIME_SLOTS.map(t => Markup.button.callback(t, `time_${t}`));
   const rows = [];
-  for (let i = 0; i < buttons.length; i += 3) {
-    rows.push(buttons.slice(i, i + 3));
-  }
+  for (let i = 0; i < buttons.length; i += 3) rows.push(buttons.slice(i, i + 3));
   return Markup.inlineKeyboard(rows);
 }
 
-/** بناء الأزرار السفلية الرئيسية (الثابتة) */
 function getMainMenuKeyboard() {
   return Markup.keyboard([
     ['📚 دخول المنصة', '📞 حجز درس'],
     ['📱 واتساب', '🤖 تواصل معنا'],
     ['ℹ️ عن الأكاديمية', '🆘 مساعدة']
-  ])
-  .resize()
-  .persistent();
+  ]).resize().persistent();
 }
 
 // ===== تهيئة البوت =====
-
 let botInstance = null;
 
 function initBot() {
   try {
-    // التحقق من وجود التوكن
     if (!constants.BOT_TOKEN) {
-      console.warn('⚠️ BOT_TOKEN مفقود في ملف .env، البوت لن يعمل');
+      console.warn('⚠️ BOT_TOKEN مفقود، البوت لن يعمل');
       return null;
     }
 
-    // إنشاء البوت
     const bot = new Telegraf(constants.BOT_TOKEN);
 
     // ===== [1] أمر /start =====
     bot.start((ctx) => {
       const userName = ctx.from.first_name || 'الطالب';
-      // حذف الجلسة السابقة إن وجدت
       sessions.delete(ctx.chat.id);
       
       ctx.replyWithMarkdown(
-        `🇸🇦 *أهلًا بك يا ${userName} في أكاديمية سمر!* 🎓\n\n` +
-        `📚 منصة تعليمية متكاملة للمناهج الدراسية.\n` +
+        `🇪🇬 *أهلًا بك يا ${userName} في سمر أكاديمي!* 🎓\n\n` +
+        `📚 منصة تعليمية مصرية متكاملة للمناهج الدراسية.\n` +
         `✨ يمكنك حجز الدروس الخصوصية مباشرة من هنا.\n\n` +
         `اختر الخيار المناسب من الأزرار أدناه 👇`,
         getMainMenuKeyboard()
@@ -143,13 +119,8 @@ function initBot() {
     });
 
     // ===== [5] معالجة الأزرار السفلية (النصوص) =====
+    bot.hears('📞 حجز درس', (ctx) => startBookingFlow(ctx));
 
-    // زر "📞 حجز درس"
-    bot.hears('📞 حجز درس', (ctx) => {
-      startBookingFlow(ctx);
-    });
-
-    // زر "📚 دخول المنصة"
     bot.hears('📚 دخول المنصة', (ctx) => {
       const url = constants.GITHUB_PAGES_URL || 'https://samaracademy254-png.github.io/samaracadmy/';
       ctx.replyWithMarkdown(
@@ -160,7 +131,6 @@ function initBot() {
       );
     });
 
-    // زر "📱 واتساب"
     bot.hears('📱 واتساب', (ctx) => {
       ctx.replyWithMarkdown(
         `📱 *تواصل معنا عبر واتساب*\n\n` +
@@ -170,7 +140,6 @@ function initBot() {
       );
     });
 
-    // زر "🤖 تواصل معنا"
     bot.hears('🤖 تواصل معنا', (ctx) => {
       ctx.replyWithMarkdown(
         `📞 *طرق التواصل المتاحة:*\n\n` +
@@ -181,10 +150,9 @@ function initBot() {
       );
     });
 
-    // زر "ℹ️ عن الأكاديمية"
     bot.hears('ℹ️ عن الأكاديمية', (ctx) => {
       ctx.replyWithMarkdown(
-        `🏫 *أكاديمية سمر*\n\n` +
+        `🏫 *سمر أكاديمي*\n\n` +
         `🇪🇬 منصة تعليمية مصرية متخصصة في المناهج الدراسية.\n` +
         `🎯 نهدف إلى تقديم محتوى تعليمي مبسط وممتع.\n\n` +
         `✅ *مميزاتنا:*\n` +
@@ -197,7 +165,6 @@ function initBot() {
       );
     });
 
-    // زر "🆘 مساعدة"
     bot.hears('🆘 مساعدة', (ctx) => {
       ctx.replyWithMarkdown(
         `🆘 *المساعدة السريعة*\n\n` +
@@ -208,15 +175,12 @@ function initBot() {
       );
     });
 
-    // ===== [6] معالجة الأزرار المضمنة (Inline Callbacks) =====
-
-    // اختيار الصف
+    // ===== [6] معالجة الأزرار المضمنة (Inline) =====
     bot.action(/grade_(.+)/, async (ctx) => {
       const chatId = ctx.chat.id;
       const gradeId = ctx.match[1];
       const session = sessions.get(chatId) || {};
 
-      // التحقق من أن المستخدم في خطوة اختيار الصف
       if (session.step !== 'grade') {
         return ctx.reply('⚠️ يرجى بدء الحجز باستخدام /booking أولاً.', getMainMenuKeyboard());
       }
@@ -240,7 +204,6 @@ function initBot() {
       );
     });
 
-    // اختيار المادة
     bot.action(/subject_(.+)/, async (ctx) => {
       const chatId = ctx.chat.id;
       const subjectId = ctx.match[1];
@@ -260,19 +223,17 @@ function initBot() {
       session.step = 'date';
       sessions.set(chatId, session);
 
-      // طلب إدخال التاريخ
       await ctx.editMessageText(
         `📅 *أدخل التاريخ المفضل* (بالصيغة YYYY-MM-DD)\n` +
         `مثال: ${new Date().toISOString().split('T')[0]}\n\n` +
         `✏️ اكتب التاريخ في شريط المحادثة أدناه.`,
         {
           parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: [] } // إزالة الأزرار
+          reply_markup: { inline_keyboard: [] }
         }
       );
     });
 
-    // اختيار الوقت
     bot.action(/time_(.+)/, async (ctx) => {
       const chatId = ctx.chat.id;
       const time = ctx.match[1];
@@ -297,13 +258,11 @@ function initBot() {
     });
 
     // ===== [7] معالجة الرسائل النصية (التاريخ، الاسم، رقم الهاتف) =====
-
     bot.on('text', async (ctx) => {
       const chatId = ctx.chat.id;
       const text = ctx.message.text.trim();
       const session = sessions.get(chatId);
 
-      // تجاهل الرسائل إذا لم تكن هناك جلسة نشطة
       if (!session) return;
 
       // --- خطوة إدخال التاريخ ---
@@ -324,7 +283,6 @@ function initBot() {
         session.step = 'time';
         sessions.set(chatId, session);
 
-        // عرض أزرار الأوقات
         await ctx.reply(
           `⏰ *اختر الوقت المناسب* للتاريخ ${text}:`,
           {
@@ -364,7 +322,6 @@ function initBot() {
         session.step = 'confirm';
         sessions.set(chatId, session);
 
-        // عرض ملخص الحجز للتأكيد
         const confirmKeyboard = Markup.inlineKeyboard([
           [Markup.button.callback('✅ تأكيد الحجز', 'confirm_yes')],
           [Markup.button.callback('❌ إلغاء', 'confirm_no')]
@@ -386,7 +343,6 @@ function initBot() {
     });
 
     // ===== [8] تأكيد الحجز أو إلغاؤه =====
-
     bot.action('confirm_yes', async (ctx) => {
       const chatId = ctx.chat.id;
       const session = sessions.get(chatId);
@@ -395,11 +351,9 @@ function initBot() {
         return ctx.reply('⚠️ انتهت صلاحية الجلسة. يرجى بدء حجز جديد باستخدام /booking.');
       }
 
-      // إرسال رسالة "جاري المعالجة"
       await ctx.editMessageText('⏳ جاري حفظ الحجز...');
 
       try {
-        // حفظ الحجز في قاعدة البيانات
         const bookingData = {
           name: session.name,
           phone: session.phone,
@@ -417,7 +371,6 @@ function initBot() {
         const newBooking = bookingService.addBooking(bookingData);
 
         if (newBooking) {
-          // إشعار النجاح
           await ctx.replyWithMarkdown(
             `✅ *تم استلام طلب الحجز بنجاح!* 🎉\n\n` +
             `📋 *تفاصيل الحجز:*\n` +
@@ -429,11 +382,11 @@ function initBot() {
             `• الوقت: ${session.time}\n\n` +
             `📌 رقم الحجز: \`${newBooking.id}\`\n\n` +
             `سيتم التواصل معك قريباً لتأكيد الحجز.\n` +
-            `شكراً لثقتك بأكاديمية سمر ❤️`,
+            `شكراً لثقتك بسمر أكاديمي ❤️`,
             getMainMenuKeyboard()
           );
 
-          // إشعار للمشرف (إذا تم تعيين ADMIN_CHAT_ID)
+          // إشعار للمشرف
           if (constants.ADMIN_CHAT_ID) {
             await bot.telegram.sendMessage(
               constants.ADMIN_CHAT_ID,
@@ -449,13 +402,10 @@ function initBot() {
             );
           }
 
-          // حذف الجلسة بعد الانتهاء
           sessions.delete(chatId);
-
         } else {
           throw new Error('فشل حفظ الحجز في قاعدة البيانات');
         }
-
       } catch (error) {
         console.error('❌ خطأ في حفظ الحجز:', error);
         await ctx.reply(
@@ -466,7 +416,6 @@ function initBot() {
       }
     });
 
-    // زر إلغاء التأكيد
     bot.action('confirm_no', async (ctx) => {
       const chatId = ctx.chat.id;
       sessions.delete(chatId);
@@ -485,21 +434,18 @@ function initBot() {
     // ===== [10] تشغيل البوت =====
     bot.launch()
       .then(() => {
-        console.log('🤖 بوت تليجرام التفاعلي يعمل بنجاح! (إصدار V3.0)');
+        console.log('🤖 بوت تليجرام التفاعلي يعمل بنجاح! (سمر أكاديمي V3.0)');
       })
       .catch((err) => {
         console.error('❌ فشل تشغيل البوت:', err.message);
       });
 
-    // حفظ مرجع البوت
     botInstance = bot;
 
-    // إيقاف البوت عند إغلاق الخادم
     process.once('SIGINT', () => bot.stop('SIGINT'));
     process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
     return bot;
-
   } catch (error) {
     console.error('❌ خطأ فادح أثناء تهيئة البوت:', error);
     return null;
@@ -507,12 +453,8 @@ function initBot() {
 }
 
 // ===== دوال مساعدة =====
-
-/** بدء تدفق الحجز */
 function startBookingFlow(ctx) {
   const chatId = ctx.chat.id;
-  
-  // إنشاء جلسة جديدة
   sessions.set(chatId, { step: 'grade' });
 
   ctx.replyWithMarkdown(
@@ -522,10 +464,8 @@ function startBookingFlow(ctx) {
   );
 }
 
-/** الحصول على مرجع البوت */
 function getBot() {
   return botInstance;
 }
 
-// ===== تصدير الوحدات =====
 module.exports = { initBot, getBot };
