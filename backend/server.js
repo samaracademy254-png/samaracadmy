@@ -330,3 +330,29 @@ process.on('SIGTERM', () => {
   console.log('🛑 جاري إيقاف السيرفر (SIGTERM)...');
   server.close(() => process.exit(0));
 });
+// backend/server.js
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const telegramService = require('./services/telegramService');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+// تهيئة البوت
+telegramService.initBot();
+
+// نقطة تجريبية
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', message: 'Samar Academy API is running!' });
+});
+
+app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+});
