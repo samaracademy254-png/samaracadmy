@@ -260,7 +260,6 @@ window.loadLessons = async function(unitId) {
     currentUnitId = unitId;
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدروس...</p></div>';
     try {
-        // قراءة ملف lessons.json الخاص بالوحدة
         const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/lessons.json`;
         const res = await fetch(path);
         if (!res.ok) throw new Error('lessons.json غير موجود');
@@ -315,20 +314,32 @@ window.loadLessonContent = async function(unitId, lessonId) {
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدرس...</p></div>';
 
     try {
-        // محاولة قراءة ملف الدرس
+        // 1. جلب محتوى الدرس من ملف JSON
         const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/${lessonId}.json`;
         const res = await fetch(path);
         if (!res.ok) throw new Error('الدرس غير موجود');
         const data = await res.json();
 
-        // ===== التحقق من وجود صفحة HTML =====
+        // 2. عرض المحتوى
+        let html = `
+            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+            <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
+        `;
+
+        // 2.a إذا كان هناك صفحة HTML مخصصة (درس تفاعلي)
         if (data.page) {
-            let html = `
+            // إضافة اسم المستودع للمسار إذا كان مطلقاً
+            let pagePath = data.page;
+            if (pagePath.startsWith('/')) {
+                pagePath = '/samaracadmy' + pagePath;
+            }
+
+            html = `
                 <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
                 <h2 style="color:var(--primary);margin-bottom:10px;">📌 ${data.title || 'درس تفاعلي'}</h2>
                 <div class="iframe-lesson-wrapper">
                     <iframe 
-                        src="${data.page}" 
+                        src="${pagePath}" 
                         loading="lazy"
                         allowfullscreen
                         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
@@ -340,18 +351,14 @@ window.loadLessonContent = async function(unitId, lessonId) {
             return;
         }
 
-        // ===== العرض النصي التقليدي (JSON) =====
-        let html = `
-            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
-            <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
-        `;
-
+        // 2.b العرض النصي التقليدي (JSON) - في حالة عدم وجود page
         if (data.videoUrl && data.videoUrl !== '') {
             html += `<div class="video-container"><iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe></div>`;
         }
 
         const summaryContent = data.summary || 'لم يتم إضافة محتوى بعد.';
         html += `<div class="summary-box"><h3>📋 المحتوى التعليمي</h3><div>${summaryContent}</div></div>`;
+        
         contentArea.innerHTML = html;
 
     } catch (e) {
