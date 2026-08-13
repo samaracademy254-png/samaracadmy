@@ -543,47 +543,71 @@
         // ===== Wizard Logic =====
         let state = { stage: '', grade: '', subject: '', unit: '', lesson: '' };
         
-        const grades = {
-            primary: [
-                { id: 'p4', name: 'الصف الرابع الابتدائي' },
-                { id: 'p5', name: 'الصف الخامس الابتدائي' },
-                { id: 'p6', name: 'الصف السادس الابتدائي' }
-            ],
-            intermediate: [
-                { id: 'm1', name: 'الصف الأول الإعدادي' },
-                { id: 'm2', name: 'الصف الثاني الإعدادي' },
-                { id: 'm3', name: 'الصف الثالث الإعدادي' }
-            ]
-        };
+        // بيانات الصفوف (سيتم تحميلها من grades.json)
+        let gradesData = { primary: [], intermediate: [] };
         
-        const primarySubjects = ['اللغة العربية', 'الدراسات الاجتماعية', 'العلوم', 'الرياضيات'];
-        const intermediateSubjects = ['الدراسات الاجتماعية', 'العلوم'];
-        
-        function getSubjectsForGrade(gradeId) {
-            if (gradeId.startsWith('p')) return primarySubjects;
-            if (gradeId.startsWith('m')) return intermediateSubjects;
-            return [];
+        // تحميل بيانات الصفوف من الملف
+        async function loadGrades() {
+            try {
+                const response = await fetch('data/grades.json');
+                if (response.ok) {
+                    gradesData = await response.json();
+                } else {
+                    // بيانات احتياطية في حال تعذر التحميل
+                    gradesData = {
+                        primary: [
+                            { id: 'p4', name: 'الصف الرابع الابتدائي' },
+                            { id: 'p5', name: 'الصف الخامس الابتدائي' },
+                            { id: 'p6', name: 'الصف السادس الابتدائي' }
+                        ],
+                        intermediate: [
+                            { id: 'm1', name: 'الصف الأول الإعدادي' },
+                            { id: 'm2', name: 'الصف الثاني الإعدادي' },
+                            { id: 'm3', name: 'الصف الثالث الإعدادي' }
+                        ]
+                    };
+                }
+            } catch (e) {
+                console.warn('فشل تحميل grades.json، استخدام البيانات الاحتياطية');
+            }
         }
         
-        const unitsDataMock = {
-            'اللغة العربية': [
-                { id: 'u1', name: 'الوحدة الأولى: القراءة والفهم' },
-                { id: 'u2', name: 'الوحدة الثانية: النحو والصرف' }
-            ],
-            'الدراسات الاجتماعية': [
-                { id: 'u1', name: 'الوحدة الأولى: وطني مصر' },
-                { id: 'u2', name: 'الوحدة الثانية: تاريخ مصر' }
-            ],
-            'العلوم': [
-                { id: 'u1', name: 'الوحدة الأولى: الكائنات الحية' },
-                { id: 'u2', name: 'الوحدة الثانية: الطاقة' }
-            ],
-            'الرياضيات': [
-                { id: 'u1', name: 'الوحدة الأولى: الأعداد' },
-                { id: 'u2', name: 'الوحدة الثانية: العمليات' }
-            ]
-        };
-        
+        // تحميل الوحدات من ملف units.json
+        async function loadUnitsFromFile(gradeId, subjectName) {
+            try {
+                const response = await fetch('data/units.json');
+                if (!response.ok) return [];
+                const data = await response.json();
+                // البحث عن الصف والمادة
+                const gradeData = data[gradeId];
+                if (!gradeData) return [];
+                // العثور على المادة (بمطابقة الاسم أو المفتاح)
+                const subjectKey = Object.keys(gradeData).find(key => 
+                    key === subjectName || 
+                    gradeData[key]?.name === subjectName
+                );
+                if (!subjectKey) return [];
+                return gradeData[subjectKey]?.units || [];
+            } catch (e) {
+                console.warn('فشل تحميل units.json:', e);
+                return [];
+            }
+        }
+
+        // تحميل الدروس من ملف lessons.json الخاص بالوحدة
+        async function loadLessonsFromFile(gradeId, subjectId, unitId) {
+            try {
+                const path = `data/study_data/${gradeId}/${subjectId}/${unitId}/lessons.json`;
+                const response = await fetch(path);
+                if (!response.ok) return [];
+                const data = await response.json();
+                return data.lessons || [];
+            } catch (e) {
+                console.warn('فشل تحميل lessons.json:', e);
+                return [];
+            }
+        }
+
         function goToStep(step) {
             document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
             document.getElementById('step' + step).classList.add('active');
@@ -591,7 +615,7 @@
         
         function selectStage(stage) {
             state.stage = stage;
-            const list = grades[stage] || [];
+            const list = gradesData[stage] || [];
             document.getElementById('gradesContainer').innerHTML = list.map(g => `
                 <div class="wizard-option" onclick="selectGrade('${g.id}')">
                     <span class="emoji">📚</span> ${g.name}
@@ -602,53 +626,104 @@
         
         function selectGrade(gradeId) {
             state.grade = gradeId;
-            const subjects = getSubjectsForGrade(gradeId);
-            document.getElementById('subjectsContainer').innerHTML = subjects.map(s => `
-                <div class="wizard-option" onclick="selectSubject('${s}')">
-                    <span class="emoji">📖</span> ${s}
-                </div>
-            `).join('');
+            // تحديد المواد بناءً على الصف (سيتم تحميلها من units.json)
+            // سنعرض مواد افتراضية ثم نحدّثها عند اختيار الوحدة
+            const subjects = ['اللغة العربية', 'الدراسات الاجتماعية', 'العلوم', 'الرياضيات'];
+            // بالنسبة للمرحلة الإعدادية بعض المواد مختلفة
+            if (gradeId.startsWith('m')) {
+                // إعدادي: دراسات + علوم فقط (كمثال)
+                document.getElementById('subjectsContainer').innerHTML = 
+                    ['الدراسات الاجتماعية', 'العلوم'].map(s => `
+                        <div class="wizard-option" onclick="selectSubject('${s}')">
+                            <span class="emoji">📖</span> ${s}
+                        </div>
+                    `).join('');
+            } else {
+                document.getElementById('subjectsContainer').innerHTML = subjects.map(s => `
+                    <div class="wizard-option" onclick="selectSubject('${s}')">
+                        <span class="emoji">📖</span> ${s}
+                    </div>
+                `).join('');
+            }
             goToStep(3);
         }
         
-        function selectSubject(subject) {
+        async function selectSubject(subject) {
             state.subject = subject;
-            const units = unitsDataMock[subject] || [];
-            document.getElementById('unitsContainer').innerHTML = units.map(u => `
-                <div class="wizard-option" onclick="selectUnit('${u.id}')">
-                    <span class="emoji">📂</span> ${u.name}
-                </div>
-            `).join('');
+            // تحميل الوحدات من ملف units.json
+            // نحتاج إلى معرف المفتاح الصحيح للمادة (arabic, social, science, math)
+            const subjectMap = {
+                'اللغة العربية': 'arabic',
+                'الدراسات الاجتماعية': 'social',
+                'العلوم': 'science',
+                'الرياضيات': 'math'
+            };
+            const subjectKey = subjectMap[subject] || subject;
+            
+            const units = await loadUnitsFromFile(state.grade, subjectKey);
+            if (units.length === 0) {
+                // إذا لم توجد وحدات، نعرض وحدات تجريبية
+                document.getElementById('unitsContainer').innerHTML = `
+                    <div class="wizard-option" onclick="selectUnit('u1')">
+                        <span class="emoji">📂</span> الوحدة الأولى: تجريبية
+                    </div>
+                `;
+            } else {
+                document.getElementById('unitsContainer').innerHTML = units.map(u => `
+                    <div class="wizard-option" onclick="selectUnit('${u.id}')">
+                        <span class="emoji">📂</span> ${u.name}
+                    </div>
+                `).join('');
+            }
+            // تخزين المفتاح للاستخدام لاحقاً
+            state.subjectKey = subjectKey;
             goToStep(4);
         }
         
-        function selectUnit(unitId) {
+        async function selectUnit(unitId) {
             state.unit = unitId;
-            const mockLessons = [
-                { id: 'l1', name: 'الدرس الأول: المقدمة' },
-                { id: 'l2', name: 'الدرس الثاني: الموضوع الرئيسي' },
-                { id: 'l3', name: 'الدرس الثالث: التطبيقات' }
-            ];
-            document.getElementById('lessonsContainer').innerHTML = mockLessons.map(l => `
-                <div class="wizard-option" onclick="selectLesson('${l.id}')">
-                    <span class="emoji">📝</span> ${l.name}
-                </div>
-            `).join('');
+            // تحميل الدروس من ملف lessons.json الخاص بالوحدة
+            const subjectKey = state.subjectKey || 'arabic';
+            const lessons = await loadLessonsFromFile(state.grade, subjectKey, unitId);
+            
+            if (lessons.length === 0) {
+                document.getElementById('lessonsContainer').innerHTML = `
+                    <div class="wizard-option" onclick="selectLesson('l1')">
+                        <span class="emoji">📝</span> الدرس الأول: تجريبي
+                    </div>
+                `;
+            } else {
+                document.getElementById('lessonsContainer').innerHTML = lessons.map(l => `
+                    <div class="wizard-option" onclick="selectLesson('${l.id}')">
+                        <span class="emoji">📝</span> ${l.name}
+                    </div>
+                `).join('');
+            }
             goToStep(5);
         }
         
         function selectLesson(lessonId) {
             state.lesson = lessonId;
+            const gradeName = getGradeName(state.grade);
+            const subjectName = state.subject;
+            const unitName = document.querySelector('#unitsContainer .selected')?.textContent?.trim() || state.unit;
             document.getElementById('selectionSummary').textContent = 
-                `الصف: ${state.grade} | المادة: ${state.subject} | الوحدة: ${state.unit} | الدرس: ${lessonId}`;
+                `الصف: ${gradeName} | المادة: ${subjectName} | الوحدة: ${unitName} | الدرس: ${lessonId}`;
             
-            const baseUrl = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
+            // ===== التعديل المطلوب: تحديث الروابط الجديدة =====
+            // نمرر فقط grade و subject، لأن محركات الشرح والاختبار ستقرأ الوحدات والدروس من ملفاتها
             document.getElementById('startStudyBtn').href = 
-                `pages/Study/index.html?grade=${state.grade}&subject=${state.subject}&unit=${state.unit}&lesson=${lessonId}`;
+                `pages/Study/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
             document.getElementById('startQuizBtn').href = 
-                `pages/Home/index.html?grade=${state.grade}&subject=${state.subject}&unit=${state.unit}&lesson=${lessonId}`;
+                `pages/Home/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
             
             goToStep(6);
+        }
+        
+        function getGradeName(gradeId) {
+            const allGrades = [...gradesData.primary, ...gradesData.intermediate];
+            const found = allGrades.find(g => g.id === gradeId);
+            return found ? found.name : gradeId;
         }
         
         // ===== Navbar Hamburger =====
@@ -665,6 +740,12 @@
             e.preventDefault();
             document.getElementById('wizard').scrollIntoView({ behavior: 'smooth' });
         });
+
+        // ===== تهيئة البيانات عند تحميل الصفحة =====
+        (async function init() {
+            await loadGrades();
+            // يمكن إضافة أي تهيئة إضافية هنا
+        })();
     </script>
 </body>
 </html>

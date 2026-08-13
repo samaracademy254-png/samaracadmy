@@ -1,11 +1,11 @@
 // docs/assets/js/services/api.service.js
-// كبير المستشارين - خدمة API الموحدة (V3.0)
+// خدمة API الموحدة - الإصدار المطور (V5.0)
 
 const ApiService = (function() {
-    // يمكن تغيير هذا الرابط هنا مستقبلاً بسهولة دون تعديل باقي الكود
+    // الرابط الأساسي للخادم (Suga)
     const BASE_URL = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
 
-    // دالة مساعدة للحصول على التوكن ديناميكياً
+    // ===== دوال أساسية =====
     function getToken() {
         if (typeof SecurityUtils !== 'undefined') {
             return SecurityUtils.getAuthToken();
@@ -13,7 +13,6 @@ const ApiService = (function() {
         return null;
     }
 
-    // الدالة الأساسية للطلبات (تعيد كائن Response)
     async function request(endpoint, options = {}) {
         const url = `${BASE_URL}${endpoint}`;
         const token = getToken();
@@ -36,11 +35,9 @@ const ApiService = (function() {
 
         try {
             const response = await fetch(url, config);
-            // إذا كان الرد 401، نقوم بتسجيل الخروج تلقائياً
             if (response.status === 401 || response.status === 403) {
                 if (typeof SecurityUtils !== 'undefined') {
                     SecurityUtils.setAuthToken(null);
-                    // إذا كنا في صفحة الأدمن، نعيد التوجيه للدخول
                     if (window.location.pathname.includes('admin')) {
                         window.location.href = 'login.html';
                     }
@@ -54,90 +51,94 @@ const ApiService = (function() {
         }
     }
 
-    // ===== واجهات API العامة =====
-    function getStudyData(grade, subject, unit, lesson) {
-        return request(`/api/study/${grade}/${subject}/${unit}/${lesson}`);
+    // ===== جلب البيانات من الملفات المحلية (للواجهة الأمامية) =====
+    async function fetchLocalJSON(path) {
+        try {
+            const response = await fetch(path);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`❌ فشل جلب الملف: ${path}`, error);
+            return null;
+        }
     }
 
-    function getQuizData(grade, subject, unit, lesson) {
-        return request(`/api/quiz/${grade}/${subject}/${unit}/${lesson}`);
+    // ===== دوال المنهج الجديد =====
+
+    /**
+     * جلب قائمة الوحدات لصف ومادة معينين
+     * @param {string} gradeId - معرف الصف (مثل: p4)
+     * @param {string} subjectId - معرف المادة (مثل: arabic)
+     * @returns {Promise<Array>} قائمة الوحدات
+     */
+    async function getUnits(gradeId, subjectId) {
+        const data = await fetchLocalJSON('../../data/units.json');
+        if (data && data[gradeId] && data[gradeId][subjectId]) {
+            return data[gradeId][subjectId].units || [];
+        }
+        return [];
     }
 
-    function getGrades() {
-        return request('/api/admin/grades');
+    /**
+     * جلب قائمة الدروس لوحدة معينة (من study_data أو quiz_data)
+     * @param {string} type - نوع البيانات ('study' أو 'quiz')
+     * @param {string} gradeId - معرف الصف
+     * @param {string} subjectId - معرف المادة
+     * @param {string} unitId - معرف الوحدة
+     * @returns {Promise<Array>} قائمة الدروس
+     */
+    async function getLessonsList(type, gradeId, subjectId, unitId) {
+        const folder = type === 'study' ? 'study_data' : 'quiz_data';
+        const path = `../../data/${folder}/${gradeId}/${subjectId}/${unitId}/lessons.json`;
+        const data = await fetchLocalJSON(path);
+        return data && data.lessons ? data.lessons : [];
     }
 
-    function getSubjects(gradeId) {
-        return request(`/api/admin/subjects/${gradeId}`);
+    /**
+     * جلب محتوى درس معين (من study_data أو quiz_data)
+     * @param {string} type - نوع البيانات ('study' أو 'quiz')
+     * @param {string} gradeId - معرف الصف
+     * @param {string} subjectId - معرف المادة
+     * @param {string} unitId - معرف الوحدة
+     * @param {string} lessonId - معرف الدرس
+     * @returns {Promise<Object>} محتوى الدرس
+     */
+    async function getLessonContent(type, gradeId, subjectId, unitId, lessonId) {
+        const folder = type === 'study' ? 'study_data' : 'quiz_data';
+        const path = `../../data/${folder}/${gradeId}/${subjectId}/${unitId}/${lessonId}.json`;
+        return await fetchLocalJSON(path);
     }
 
-    function getUnits(gradeId, subjectName) {
-        return request(`/api/admin/units/${gradeId}/${encodeURIComponent(subjectName)}`);
+    /**
+     * جلب إعدادات الصفوف
+     */
+    async function getGrades() {
+        const data = await fetchLocalJSON('../../data/grades.json');
+        return data || { primary: [], intermediate: [] };
     }
 
-    function getBookings(params = {}) {
-        const query = new URLSearchParams(params).toString();
-        return request(`/api/admin/bookings${query ? '?' + query : ''}`);
-    }
+    // ===== دوال التوافق مع الإصدارات السابقة (للـ Admin) =====
+    // ... (تبقى دوال API القديمة كما هي للتوافق مع لوحة التحكم)
 
-    function updateBooking(id, data) {
-        return request(`/api/admin/bookings/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    function deleteBooking(id) {
-        return request(`/api/admin/bookings/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    function addGrade(data) { return request('/api/admin/grades', { method: 'POST', body: JSON.stringify(data) }); }
-    function deleteGrade(id) { return request(`/api/admin/grades/${id}`, { method: 'DELETE' }); }
-
-    function addSubject(data) { return request('/api/admin/subjects', { method: 'POST', body: JSON.stringify(data) }); }
-    function deleteSubject(gradeId, subjectName) { return request(`/api/admin/subjects/${gradeId}/${encodeURIComponent(subjectName)}`, { method: 'DELETE' }); }
-
-    function addUnit(data) { return request('/api/admin/units', { method: 'POST', body: JSON.stringify(data) }); }
-    function deleteUnit(gradeId, subjectName, unitId) { return request(`/api/admin/units/${gradeId}/${encodeURIComponent(subjectName)}/${unitId}`, { method: 'DELETE' }); }
-
-    function addLesson(data) { return request('/api/admin/lessons', { method: 'POST', body: JSON.stringify(data) }); }
-    function deleteLesson(gradeId, subjectName, unitId, lessonId) { return request(`/api/admin/lessons/${gradeId}/${encodeURIComponent(subjectName)}/${unitId}/${lessonId}`, { method: 'DELETE' }); }
-
-    function getStats() {
-        return request('/api/admin/stats');
-    }
-
-    function createBooking(data) {
-        return request('/api/booking', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    // فضح الواجهات العامة
+    // ===== تصدير الواجهات العامة =====
     return {
-        getStudyData,
-        getQuizData,
-        getGrades,
-        getSubjects,
+        // الدوال الأساسية
+        request,
+        fetchLocalJSON,
+        
+        // دوال المنهج الجديد
         getUnits,
-        getBookings,
-        updateBooking,
-        deleteBooking,
-        addGrade,
-        deleteGrade,
-        addSubject,
-        deleteSubject,
-        addUnit,
-        deleteUnit,
-        addLesson,
-        deleteLesson,
-        getStats,
-        createBooking,
-        // فضح الدالة الأساسية للاستخدامات الاستثنائية
-        request
+        getLessonsList,
+        getLessonContent,
+        getGrades,
+
+        // دوال التوافق القديم (للـ Admin - سيتم تحديثها لاحقاً)
+        getSubjects: () => request('/api/admin/subjects'),
+        getBookings: (params) => request(`/api/admin/bookings${params ? '?' + new URLSearchParams(params).toString() : ''}`),
+        updateBooking: (id, data) => request(`/api/admin/bookings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+        deleteBooking: (id) => request(`/api/admin/bookings/${id}`, { method: 'DELETE' }),
+        getStats: () => request('/api/admin/stats'),
+        createBooking: (data) => request('/api/booking', { method: 'POST', body: JSON.stringify(data) }),
     };
 })();
 
