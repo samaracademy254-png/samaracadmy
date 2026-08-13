@@ -307,7 +307,7 @@ window.loadLessons = async function(unitId) {
     }
 };
 
-// ===== تحميل محتوى الدرس (النسخة النهائية الصحيحة) =====
+// ===== تحميل محتوى الدرس (النسخة النهائية مع إصلاح المسار) =====
 window.loadLessonContent = async function(unitId, lessonId) {
     currentUnitId = unitId;
     currentLessonId = lessonId;
@@ -320,12 +320,17 @@ window.loadLessonContent = async function(unitId, lessonId) {
         if (!res.ok) throw new Error('الدرس غير موجود');
         const data = await res.json();
 
-        // 2. التحقق من وجود صفحة HTML مخصصة (التعديل الأساسي)
+        // 2. التحقق من وجود صفحة HTML مخصصة
         if (data.page) {
-            // تحديد المسار الصحيح: إذا بدأ بـ / نضيف اسم المستودع
             let pagePath = data.page;
-            if (pagePath.startsWith('/')) {
-                pagePath = '/samaracadmy' + pagePath; // <-- التعديل المهم
+            // === التعديل الأساسي: إصلاح المسار ===
+            // إذا كان المسار لا يبدأ بـ '/' ولا يحتوي على 'samaracadmy'، فأضف اسم المستودع
+            if (!pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
+                pagePath = '/samaracadmy/' + pagePath;
+            }
+            // إذا بدأ بـ '/'، أضف اسم المستودع أمامه (للتأكد)
+            else if (pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
+                pagePath = '/samaracadmy' + pagePath;
             }
 
             // عرض المحتوى داخل iframe
