@@ -8,6 +8,7 @@
 <script src="../../assets/js/utils/security.js" defer></script>
 <script src="../../assets/js/services/api.service.js" defer></script>
 <style>
+/* نفس الأنماط السابقة (لم تتغير) */
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
   --primary: #0A4D8C;
@@ -220,7 +221,7 @@ body {
 
 <script>
 // ============================================================
-// محرك الشرح - النسخة المطورة (V5.0) تدعم الهيكل الجديد
+// محرك الشرح - النسخة المطورة (V5.1) مع إصلاح المسارات
 // ============================================================
 let currentGrade = 'p4';
 let currentSubject = 'arabic';
@@ -323,12 +324,17 @@ window.loadLessonContent = async function(unitId, lessonId) {
         // 2. التحقق من وجود صفحة HTML مخصصة
         if (data.page) {
             let pagePath = data.page;
-            // === التعديل الأساسي: إصلاح المسار ===
-            // إذا كان المسار لا يبدأ بـ '/' ولا يحتوي على 'samaracadmy'، فأضف اسم المستودع
-            if (!pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
+
+            // ===== التعديل الأساسي: إصلاح المسار =====
+            // إذا كان المسار لا يحتوي على 'samaracadmy' (أي أنه مسار نسبي)،
+            // نضيف '/samaracadmy/' في البداية ونتأكد من عدم وجود شرطة مائلة زائدة
+            if (!pagePath.includes('samaracadmy')) {
+                // إزالة أي شرطة مائلة من البداية
+                pagePath = pagePath.replace(/^\/+/, '');
+                // إضافة اسم المستودع
                 pagePath = '/samaracadmy/' + pagePath;
             }
-            // إذا بدأ بـ '/'، أضف اسم المستودع أمامه (للتأكد)
+            // إذا بدأ بـ '/' ولكن لا يحتوي على 'samaracadmy' (مثل '/pages/...')
             else if (pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
                 pagePath = '/samaracadmy' + pagePath;
             }
