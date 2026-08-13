@@ -307,34 +307,29 @@ window.loadLessons = async function(unitId) {
     }
 };
 
-// ===== تحميل محتوى الدرس =====
+// ===== تحميل محتوى الدرس (النسخة النهائية الصحيحة) =====
 window.loadLessonContent = async function(unitId, lessonId) {
     currentUnitId = unitId;
     currentLessonId = lessonId;
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدرس...</p></div>';
 
     try {
-        // 1. جلب محتوى الدرس من ملف JSON
+        // 1. جلب محتوى الدرس
         const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/${lessonId}.json`;
         const res = await fetch(path);
         if (!res.ok) throw new Error('الدرس غير موجود');
         const data = await res.json();
 
-        // 2. عرض المحتوى
-        let html = `
-            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
-            <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
-        `;
-
-        // 2.a إذا كان هناك صفحة HTML مخصصة (درس تفاعلي)
+        // 2. التحقق من وجود صفحة HTML مخصصة (التعديل الأساسي)
         if (data.page) {
-            // إضافة اسم المستودع للمسار إذا كان مطلقاً
+            // تحديد المسار الصحيح: إذا بدأ بـ / نضيف اسم المستودع
             let pagePath = data.page;
             if (pagePath.startsWith('/')) {
-                pagePath = '/samaracadmy' + pagePath;
+                pagePath = '/samaracadmy' + pagePath; // <-- التعديل المهم
             }
 
-            html = `
+            // عرض المحتوى داخل iframe
+            let html = `
                 <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
                 <h2 style="color:var(--primary);margin-bottom:10px;">📌 ${data.title || 'درس تفاعلي'}</h2>
                 <div class="iframe-lesson-wrapper">
@@ -348,10 +343,15 @@ window.loadLessonContent = async function(unitId, lessonId) {
                 <p style="color:var(--gray);font-size:0.8rem;text-align:center;">📌 محتوى تفاعلي غني بالرسوم التوضيحية والجداول</p>
             `;
             contentArea.innerHTML = html;
-            return;
+            return; // إنهاء الدالة هنا
         }
 
-        // 2.b العرض النصي التقليدي (JSON) - في حالة عدم وجود page
+        // 3. العرض النصي التقليدي (JSON) - إذا لم يكن هناك حقل page
+        let html = `
+            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+            <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
+        `;
+
         if (data.videoUrl && data.videoUrl !== '') {
             html += `<div class="video-container"><iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe></div>`;
         }
