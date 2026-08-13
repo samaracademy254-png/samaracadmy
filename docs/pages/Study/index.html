@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>سمر اكاديمي  - شرح الدروس</title>
+<title>سمر أكاديمي - شرح الدروس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="../../assets/js/utils/security.js" defer></script>
 <script src="../../assets/js/services/api.service.js" defer></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
-  --primary: #006C35;
-  --primary-light: #E8F5E9;
+  --primary: #0A4D8C;
+  --primary-dark: #062A4A;
+  --primary-light: #D4E6F1;
   --gold: #C8A44D;
   --gray: #64748B;
   --white: #FFFFFF;
@@ -19,12 +20,12 @@
 }
 body {
   font-family: 'Cairo', sans-serif;
-  background: #F8FAF8;
+  background: #F8FAFC;
   min-height: 100vh;
   padding: 20px;
 }
 .container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   background: var(--white);
   border-radius: 24px;
@@ -55,8 +56,9 @@ body {
   background: var(--primary); color: white;
 }
 
+/* ===== Grid Cards ===== */
 .grid-cards {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px; margin-top: 20px;
 }
 .card-item {
@@ -70,6 +72,24 @@ body {
 }
 .card-item .icon { font-size: 2.5rem; margin-bottom: 8px; }
 .card-item .sub { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
+.card-item .badge-html {
+  display: inline-block;
+  background: #0e7c86; color: white;
+  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
+  margin-top: 5px;
+}
+.card-item .badge-json {
+  display: inline-block;
+  background: #c9830a; color: white;
+  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
+  margin-top: 5px;
+}
+.card-item .badge-review {
+  display: inline-block;
+  background: #9b1a2a; color: white;
+  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
+  margin-top: 5px;
+}
 
 .back-btn {
   background: var(--gray); color: white; border: none;
@@ -104,6 +124,27 @@ body {
 }
 .summary-box h3 { color: var(--primary); margin-bottom: 10px; font-weight: 900; }
 
+/* ===== Iframe Container ===== */
+.iframe-lesson-wrapper {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 120%;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #0d1b2a;
+  margin: 15px 0;
+}
+.iframe-lesson-wrapper iframe {
+  position: absolute;
+  top: 0; right: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
 .actions {
   display: flex; gap: 15px; margin-top: 25px;
   justify-content: center; flex-wrap: wrap;
@@ -115,7 +156,7 @@ body {
   display: inline-block; font-family: 'Cairo';
 }
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,108,53,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(10,77,140,0.3); }
 .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
 .btn-outline:hover { background: var(--primary); color: white; }
 .btn-success { background: #059669; color: white; }
@@ -138,6 +179,7 @@ body {
   .header h1 { font-size: 1.4rem; }
   .summary-box { font-size: 0.95rem; padding: 18px; }
   .grid-cards { grid-template-columns: 1fr 1fr; }
+  .iframe-lesson-wrapper { padding-bottom: 150%; }
 }
 </style>
 </head>
@@ -148,16 +190,17 @@ body {
     <h1>📖 محرك الشرح التعليمي</h1>
     <div class="subtitle" id="lessonInfo">اختر الصف والمادة</div>
     <div class="grade-selector" id="gradeSelector">
-      <button data-grade="p4" class="grade-btn">رابع</button>
-      <button data-grade="p5" class="grade-btn active">خامس</button>
+      <button data-grade="p4" class="grade-btn active">رابع</button>
+      <button data-grade="p5" class="grade-btn">خامس</button>
       <button data-grade="p6" class="grade-btn">سادس</button>
       <button data-grade="m1" class="grade-btn">أول متوسط</button>
       <button data-grade="m2" class="grade-btn">ثاني متوسط</button>
       <button data-grade="m3" class="grade-btn">ثالث متوسط</button>
     </div>
     <div class="subject-selector" id="subjectSelector">
+      <button data-subject="arabic" class="subject-btn active">📖 لغة عربية</button>
+      <button data-subject="social" class="subject-btn">🌍 دراسات</button>
       <button data-subject="science" class="subject-btn">🔬 علوم</button>
-      <button data-subject="social" class="subject-btn active">🌍 اجتماعيات</button>
       <button data-subject="math" class="subject-btn">📐 رياضيات</button>
     </div>
   </div>
@@ -177,10 +220,10 @@ body {
 
 <script>
 // ============================================================
-// محرك الشرح - النسخة المُعاد هيكلتها (V3.0) باستخدام ApiService
+// محرك الشرح - النسخة المطورة (V5.0) تدعم الهيكل الجديد
 // ============================================================
-let currentGrade = 'p5';
-let currentSubject = 'social';
+let currentGrade = 'p4';
+let currentSubject = 'arabic';
 let currentUnitId = null;
 let currentLessonId = null;
 
@@ -189,6 +232,7 @@ const gradeBtns = document.querySelectorAll('.grade-btn');
 const subjectBtns = document.querySelectorAll('.subject-btn');
 const quizLink = document.getElementById('quizLink');
 
+// ===== تحميل الوحدات =====
 async function loadUnits() {
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الوحدات...</p></div>';
     try {
@@ -211,65 +255,140 @@ async function loadUnits() {
     }
 }
 
+// ===== تحميل قائمة الدروس =====
 window.loadLessons = async function(unitId) {
     currentUnitId = unitId;
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدروس...</p></div>';
     try {
-        let lessons = [];
+        // قراءة ملف lessons.json الخاص بالوحدة
         const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/lessons.json`;
         const res = await fetch(path);
-        if (res.ok) { const data = await res.json(); lessons = data.lessons || []; } 
-        else {
-            let i = 1;
-            while (true) {
-                try {
-                    const testRes = await fetch(`../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/lesson${i}.json`);
-                    if (!testRes.ok) break;
-                    lessons.push({ id: `lesson${i}`, name: `الدرس ${i}` });
-                    i++;
-                } catch { break; }
-            }
+        if (!res.ok) throw new Error('lessons.json غير موجود');
+        const data = await res.json();
+        const lessons = data.lessons || [];
+
+        if (!lessons.length) {
+            contentArea.innerHTML = `<button class="back-btn" onclick="loadUnits()">⬅️ العودة</button><div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد دروس في هذه الوحدة</div>`;
+            return;
         }
-        if (!lessons.length) { contentArea.innerHTML = `<button class="back-btn" onclick="loadUnits()">⬅️ العودة</button><div style="color:#dc2626;padding:20px;text-align:center;">⚠️ لا توجد دروس</div>`; return; }
-        let html = `<button class="back-btn" onclick="loadUnits()">⬅️ العودة</button><h3 style="color:var(--primary);">📖 اختر الدرس</h3><div class="grid-cards">`;
-        lessons.forEach((lesson, idx) => {
-            const lid = lesson.id || `lesson${idx+1}`;
-            html += `<div class="card-item" onclick="loadLessonContent('${unitId}', '${lid}')"><div class="icon">📺</div><div>${lesson.name}</div><div class="sub">شرح + ملخص</div></div>`;
+
+        let html = `<button class="back-btn" onclick="loadUnits()">⬅️ العودة للوحدات</button><h3 style="color:var(--primary);">📖 دروس الوحدة</h3><div class="grid-cards">`;
+        lessons.forEach((lesson) => {
+            const isHtml = lesson.page ? true : false;
+            const isReview = lesson.type === 'review';
+            
+            let badge = '';
+            let icon = '📄';
+            let subText = 'مراجعة سريعة';
+            if (isHtml) {
+                badge = '<span class="badge-html">📄 تفاعلي</span>';
+                icon = '🎨';
+                subText = 'محتوى غني بالصور والجداول';
+            } else if (isReview) {
+                badge = '<span class="badge-review">📝 مراجعة</span>';
+                icon = '📝';
+                subText = 'ملخص ومراجعة';
+            } else {
+                badge = '<span class="badge-json">📝 نصي</span>';
+                icon = '📄';
+                subText = 'شرح نصي وفيديو';
+            }
+
+            html += `<div class="card-item" onclick="loadLessonContent('${unitId}', '${lesson.id}')">
+                <div class="icon">${icon}</div>
+                <div>${lesson.name}</div>
+                <div class="sub">${subText}</div>
+                ${badge}
+            </div>`;
         });
         html += `</div>`;
         contentArea.innerHTML = html;
-    } catch (e) { contentArea.innerHTML = `<div style="color:#dc2626;padding:20px;text-align:center;">⚠️ ${e.message}</div>`; }
-};
-
-window.loadLessonContent = async function(unitId, lessonId) {
-    currentUnitId = unitId; currentLessonId = lessonId;
-    contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدرس...</p></div>';
-    try {
-        const response = await ApiService.getStudyData(currentGrade, currentSubject, unitId, lessonId);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        let html = `<button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة</button><h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>`;
-        if (data.videoUrl) {
-            html += `<div class="video-container"><iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe></div>`;
-        } else {
-            html += `<div style="background:#f0f4f0;padding:30px;text-align:center;border-radius:16px;margin-bottom:20px;"><p style="font-size:1.2rem;color:#64748B;">📺 لا يوجد فيديو</p></div>`;
-        }
-        html += `<div class="summary-box"><h3>📋 الملخص</h3><p>${data.summary || 'لم يتم إضافة ملخص بعد.'}</p></div>`;
-        contentArea.innerHTML = html;
     } catch (e) {
-        contentArea.innerHTML = `<button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة</button><div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل التحميل: ${e.message}</div>`;
+        contentArea.innerHTML = `<button class="back-btn" onclick="loadUnits()">⬅️ العودة</button><div style="color:#dc2626;padding:20px;text-align:center;">⚠️ فشل تحميل الدروس: ${e.message}</div>`;
     }
 };
 
+// ===== تحميل محتوى الدرس =====
+window.loadLessonContent = async function(unitId, lessonId) {
+    currentUnitId = unitId;
+    currentLessonId = lessonId;
+    contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدرس...</p></div>';
+
+    try {
+        // محاولة قراءة ملف الدرس
+        const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/${lessonId}.json`;
+        const res = await fetch(path);
+        if (!res.ok) throw new Error('الدرس غير موجود');
+        const data = await res.json();
+
+        // ===== التحقق من وجود صفحة HTML =====
+        if (data.page) {
+            let html = `
+                <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+                <h2 style="color:var(--primary);margin-bottom:10px;">📌 ${data.title || 'درس تفاعلي'}</h2>
+                <div class="iframe-lesson-wrapper">
+                    <iframe 
+                        src="${data.page}" 
+                        loading="lazy"
+                        allowfullscreen
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    ></iframe>
+                </div>
+                <p style="color:var(--gray);font-size:0.8rem;text-align:center;">📌 محتوى تفاعلي غني بالرسوم التوضيحية والجداول</p>
+            `;
+            contentArea.innerHTML = html;
+            return;
+        }
+
+        // ===== العرض النصي التقليدي (JSON) =====
+        let html = `
+            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+            <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
+        `;
+
+        if (data.videoUrl && data.videoUrl !== '') {
+            html += `<div class="video-container"><iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe></div>`;
+        }
+
+        const summaryContent = data.summary || 'لم يتم إضافة محتوى بعد.';
+        html += `<div class="summary-box"><h3>📋 المحتوى التعليمي</h3><div>${summaryContent}</div></div>`;
+        contentArea.innerHTML = html;
+
+    } catch (e) {
+        console.error('Error loading lesson:', e);
+        contentArea.innerHTML = `
+            <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
+            <div style="color:#dc2626;padding:20px;text-align:center;">
+                ⚠️ فشل تحميل الدرس: ${e.message}
+            </div>
+        `;
+    }
+};
+
+// ===== دوال تبديل الصف والمادة =====
 function setActiveGrade(g) { gradeBtns.forEach(b => b.classList.toggle('active', b.dataset.grade === g)); }
 function setActiveSubject(s) { subjectBtns.forEach(b => b.classList.toggle('active', b.dataset.subject === s)); }
-gradeBtns.forEach(btn => btn.addEventListener('click', () => { currentGrade = btn.dataset.grade; setActiveGrade(currentGrade); quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`; loadUnits(); }));
-subjectBtns.forEach(btn => btn.addEventListener('click', () => { currentSubject = btn.dataset.subject; setActiveSubject(currentSubject); quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`; loadUnits(); }));
 
+gradeBtns.forEach(btn => btn.addEventListener('click', () => {
+    currentGrade = btn.dataset.grade;
+    setActiveGrade(currentGrade);
+    quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    loadUnits();
+}));
+
+subjectBtns.forEach(btn => btn.addEventListener('click', () => {
+    currentSubject = btn.dataset.subject;
+    setActiveSubject(currentSubject);
+    quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
+    loadUnits();
+}));
+
+// ===== بدء التشغيل =====
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('grade')) currentGrade = urlParams.get('grade');
 if (urlParams.get('subject')) currentSubject = urlParams.get('subject');
-setActiveGrade(currentGrade); setActiveSubject(currentSubject);
+setActiveGrade(currentGrade);
+setActiveSubject(currentSubject);
 quizLink.href = `../Home/index.html?grade=${currentGrade}&subject=${currentSubject}`;
 document.getElementById('lessonInfo').textContent = `${currentGrade} - ${currentSubject}`;
 loadUnits();
