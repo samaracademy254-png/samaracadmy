@@ -1,16 +1,168 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الدرس الأول: كلُّ منا له حلم - لغتي الجميلة</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-/* نفس الأنماط السابقة في النموذج ... */
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدرس الأول: كلُّ منا له حلم - لغتي الجميلة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{--primary:#0A4D8C;--primary-dark:#062A4A;--primary-light:#D4E6F1;--gold:#C8A44D;--gold-light:#F5E6C8;--white:#fff;--gray:#64748B;--gray-light:#f1f5f9;--shadow:0 4px 20px rgba(0,0,0,0.08);--radius:16px;}
+        body{font-family:'Cairo',sans-serif;background:#f8fafc;min-height:100vh;direction:rtl;}
+        .hero{background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:white;padding:2rem 1.5rem;text-align:center;border-radius:0 0 30px 30px;margin-bottom:2rem;}
+        .hero .sub{font-size:.8rem;color:rgba(255,255,255,.7);letter-spacing:.05em;}
+        .hero h1{font-weight:900;font-size:1.6rem;margin:.3rem 0;}
+        .hero .meta{display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;font-size:.85rem;color:rgba(255,255,255,.85);}
+        .container{max-width:900px;margin:0 auto;padding:0 1rem 3rem;}
+        .tabs{display:flex;gap:.4rem;flex-wrap:wrap;background:white;padding:.6rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1.5rem;border:1px solid #e2e8f0;}
+        .tab-btn{flex:1;min-width:80px;padding:.6rem .8rem;border:none;border-radius:10px;background:transparent;color:var(--gray);font-family:'Cairo',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;}
+        .tab-btn:hover{background:var(--gray-light);}
+        .tab-btn.active{background:var(--primary);color:white;}
+        .tab-panel{display:none;animation:fadeIn .3s ease;}
+        .tab-panel.active{display:block;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        .card{background:white;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid #e2e8f0;margin-bottom:1.2rem;}
+        .card h3{color:var(--primary);font-weight:900;font-size:1.1rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;}
+        .card p,.card li{line-height:1.9;color:#1e293b;}
+        .card ul{padding-right:1.2rem;}
+        .card ul li{margin-bottom:.3rem;}
+        .audio-player{background:var(--gray-light);border-radius:12px;padding:.8rem 1rem;margin-top:.5rem;}
+        .audio-player audio{width:100%;}
+        .grammar-box{background:#f0fdf4;border-right:4px solid #22c55e;padding:1rem;border-radius:8px;margin:.5rem 0;}
+        .grammar-box strong{color:#166534;}
+        .review-link{display:block;background:var(--gold-light);border:2px solid var(--gold);border-radius:var(--radius);padding:1rem;text-align:center;margin-top:1.5rem;text-decoration:none;color:#78350f;font-weight:700;transition:.2s;}
+        .review-link:hover{background:var(--gold);color:white;}
+        @media(max-width:640px){.tabs{flex-direction:column;}.tab-btn{min-width:auto;}.hero h1{font-size:1.3rem;}}
+    </style>
 </head>
 <body>
-<!-- محتوى الدرس التفاعلي (الاستماع، القراءة، القواعد، التحدث، الكتابة) -->
-<!-- ... -->
+    <div class="hero">
+        <div class="sub">الصف الرابع الابتدائي · الفصل الدراسي الأول</div>
+        <h1>📖 كلُّ منا له حلم</h1>
+        <div class="meta">
+            <span>📚 الوحدة الأولى: أنا وحلمي</span>
+            <span>📝 الدرس الأول</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs" id="tabContainer">
+            <button class="tab-btn active" data-tab="listen">🎧 الاستماع</button>
+            <button class="tab-btn" data-tab="read">📖 القراءة</button>
+            <button class="tab-btn" data-tab="grammar">📐 القواعد</button>
+            <button class="tab-btn" data-tab="speak">🗣️ التحدث</button>
+            <button class="tab-btn" data-tab="write">✍️ الكتابة</button>
+        </div>
+
+        <div class="tab-panel active" id="panel-listen">
+            <div class="card">
+                <h3>🎧 الاستماع: كلُّ منا له حلم</h3>
+                <p>استمع إلى النص التالي جيداً، ثم أجب عن الأسئلة التي تليه.</p>
+                <div class="audio-player">
+                    <audio controls>
+                        <source src="/assets/audio/p4/arabic/u1/lesson1_listen.mp3" type="audio/mpeg">
+                        متصفحك لا يدعم تشغيل الصوت.
+                    </audio>
+                    <p style="font-size:.8rem;color:var(--gray);margin-top:.3rem;">⏳ سيتم رفع الملف الصوتي قريباً</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📝 نشاط الاستماع</h3>
+                <ul>
+                    <li>❓ من هو بطل القصة؟</li>
+                    <li>❓ ما هو الحلم الذي كان يتمناه؟</li>
+                    <li>❓ كيف ساعده أصدقاؤه لتحقيق حلمه؟</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="panel-read">
+            <div class="card">
+                <h3>📖 نص القراءة: كلُّ منا له حلم</h3>
+                <p style="font-size:1.05rem;line-height:2;text-align:justify;">
+                    كان <strong>سامي</strong> طفلاً صغيراً يحلم بأن يصبح طياراً. كل يوم كان يجلس أمام النافذة ويراقب الطائرات في السماء، ويتمنى لو أنه يستطيع الطيران عالياً مثلها.<br><br>
+                    في أحد الأيام، زار سامي مع والده مطاراً قريباً. رأى الطائرات عن قرب، وتحدث مع طيار شاب أخبره أن الطيران يحتاج إلى <strong>العلم والمثابرة</strong>. منذ ذلك اليوم، عزم سامي على الدراسة بجد ليصبح طياراً ماهراً.<br><br>
+                    تقول القصة: <em>“كلُّ منا له حلم، وبالعلم والإرادة نستطيع أن نحققه.”</em>
+                </p>
+            </div>
+            <div class="card">
+                <h3>📝 أسئلة الفهم</h3>
+                <ul>
+                    <li>❓ ما هو حلم سامي؟</li>
+                    <li>❓ ماذا قال الطيار لسامي عن الطيران؟</li>
+                    <li>❓ ماذا تعلمت من هذه القصة؟</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="panel-grammar">
+            <div class="card">
+                <h3>📐 أنواع الكلمة</h3>
+                <div class="grammar-box">
+                    <p><strong>🔹 الاسم:</strong> هو ما يدل على شيء أو شخص (مثل: سامي، طائرة، حلم).</p>
+                    <p><strong>🔹 الفعل:</strong> هو ما يدل على حدوث شيء (مثل: يحلم، يطير، درس).</p>
+                    <p><strong>🔹 الحرف:</strong> هو ما يربط بين الكلمات (مثل: في، على، إلى).</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>✏️ تطبيق</h3>
+                <p>استخرج من النص السابق ثلاثة أسماء، وثلاثة أفعال، وحرفين.</p>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="panel-speak">
+            <div class="card">
+                <h3>🗣️ شارك حلمك</h3>
+                <p>تحدث عن حلمك الذي تريد تحقيقه في المستقبل. لماذا اخترت هذا الحلم؟ وكيف ستسعى لتحقيقه؟</p>
+            </div>
+            <div class="card">
+                <h3>💡 أفكار مساعدة</h3>
+                <ul>
+                    <li>ما هو حلمك؟</li>
+                    <li>من هو قدوتك في هذا المجال؟</li>
+                    <li>ماذا ستفعل لتحقيق هذا الحلم؟</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="panel-write">
+            <div class="card">
+                <h3>✍️ اكتب عن حلمك</h3>
+                <p>اكتب فقرة قصيرة (من 4 إلى 5 أسطر) عن حلمك الذي تتمنى تحقيقه في المستقبل.</p>
+                <ul>
+                    <li>⚠️ استخدم الجمل الاسمية والفعلية.</li>
+                    <li>⚠️ اهتم بعلامات الترقيم.</li>
+                    <li>⚠️ رتب أفكارك بشكل واضح.</li>
+                </ul>
+            </div>
+        </div>
+
+        <a href="#" class="review-link">📝 مراجعة الوحدة الأولى · اختبار إلكتروني</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const panels = {
+                listen: document.getElementById('panel-listen'),
+                read: document.getElementById('panel-read'),
+                grammar: document.getElementById('panel-grammar'),
+                speak: document.getElementById('panel-speak'),
+                write: document.getElementById('panel-write')
+            };
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    Object.values(panels).forEach(p => p.classList.remove('active'));
+                    const target = this.dataset.tab;
+                    if (panels[target]) {
+                        panels[target].classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
