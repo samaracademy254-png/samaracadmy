@@ -4,27 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>سمر أكاديمي - شرح الدروس</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="../../assets/js/utils/security.js" defer></script>
 <script src="../../assets/js/services/api.service.js" defer></script>
+<script src="../../assets/js/study-engine.js" defer></script>
+
 <style>
-/* نفس الأنماط السابقة (لم تتغير) */
+/* ===== أنماط Study Engine V2 ===== */
 * { margin:0; padding:0; box-sizing:border-box; }
+
 :root {
   --primary: #0A4D8C;
   --primary-dark: #062A4A;
   --primary-light: #D4E6F1;
   --gold: #C8A44D;
+  --gold-light: #F5E6C8;
   --gray: #64748B;
+  --gray-light: #f1f5f9;
   --white: #FFFFFF;
   --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --success: #059669;
+  --success-bg: #d1fae5;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
 }
+
 body {
   font-family: 'Cairo', sans-serif;
-  background: #F8FAFC;
+  background: #f8fafc;
   min-height: 100vh;
   padding: 20px;
 }
+
 .container {
   max-width: 1000px;
   margin: 0 auto;
@@ -33,6 +45,8 @@ body {
   box-shadow: var(--shadow);
   padding: 30px;
 }
+
+/* ===== الهيدر ===== */
 .header {
   text-align: center;
   padding-bottom: 20px;
@@ -42,6 +56,7 @@ body {
 .header h1 { color: var(--primary); font-weight: 900; font-size: 1.8rem; }
 .header .subtitle { color: var(--gray); font-size: 1rem; }
 
+/* ===== أزرار الصف والمادة ===== */
 .grade-selector, .subject-selector {
   display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
   margin-top: 12px;
@@ -57,7 +72,7 @@ body {
   background: var(--primary); color: white;
 }
 
-/* ===== Grid Cards ===== */
+/* ===== قائمة الدروس ===== */
 .grid-cards {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px; margin-top: 20px;
@@ -73,97 +88,437 @@ body {
 }
 .card-item .icon { font-size: 2.5rem; margin-bottom: 8px; }
 .card-item .sub { font-size: 0.8rem; color: var(--gray); font-weight: 400; }
-.card-item .badge-html {
-  display: inline-block;
-  background: #0e7c86; color: white;
-  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
-  margin-top: 5px;
-}
-.card-item .badge-json {
-  display: inline-block;
-  background: #c9830a; color: white;
-  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
-  margin-top: 5px;
-}
-.card-item .badge-review {
-  display: inline-block;
-  background: #9b1a2a; color: white;
-  font-size: 0.6rem; padding: 2px 10px; border-radius: 30px;
-  margin-top: 5px;
+
+/* ===== Study Engine Styles ===== */
+.study-engine {
+  padding: 10px 0;
 }
 
-.back-btn {
-  background: var(--gray); color: white; border: none;
-  padding: 8px 24px; border-radius: 30px; cursor: pointer;
-  font-weight: 700; font-family: 'Cairo'; margin-bottom: 15px;
+/* شريط التقدم */
+.study-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--gray-light);
+  padding: 12px 20px;
+  border-radius: 30px;
+  margin-bottom: 25px;
+}
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--gold));
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+.progress-text {
+  font-weight: 800;
+  color: var(--primary);
+  min-width: 50px;
+  text-align: center;
+}
+
+/* رأس الدرس */
+.study-header {
+  margin-bottom: 30px;
+}
+.study-title {
+  font-size: 1.8rem;
+  color: var(--primary);
+  font-weight: 900;
+  margin-bottom: 15px;
+}
+.study-objectives {
+  background: var(--primary-light);
+  border-radius: 12px;
+  padding: 15px 20px;
+  border-right: 4px solid var(--primary);
+}
+.study-objectives h3 {
+  color: var(--primary);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.study-objectives ul {
+  padding-right: 20px;
+}
+.study-objectives li {
+  color: #1e293b;
+  line-height: 1.8;
+}
+
+/* الأقسام */
+.study-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: var(--gray-light);
+  cursor: pointer;
   transition: .2s;
 }
-.back-btn:hover { background: #475569; }
-
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  border-radius: 16px;
-  margin-bottom: 25px;
-  background: #1a1a2e;
+.section-header:hover {
+  background: #e8edf2;
 }
-.video-container iframe {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; border: none;
+.section-number {
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
-.summary-box {
+.section-header h2 {
+  flex: 1;
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+}
+.section-done {
+  font-size: 1.2rem;
+}
+.section-body {
+  padding: 20px;
+  display: none;
+}
+.study-section.active .section-body {
+  display: block;
+}
+.study-section.active .section-header {
   background: var(--primary-light);
-  padding: 25px;
-  border-radius: 16px;
-  border-right: 5px solid var(--primary);
-  text-align: right;
-  line-height: 1.9;
-  font-size: 1.05rem;
-  color: #1a2e1a;
 }
-.summary-box h3 { color: var(--primary); margin-bottom: 10px; font-weight: 900; }
 
-/* ===== Iframe Container ===== */
-.iframe-lesson-wrapper {
-  position: relative;
-  width: 100%;
-  height: 0;
-  padding-bottom: 120%;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: #0d1b2a;
+/* ===== بلوكات ===== */
+.block-text {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+.block-heading {
+  font-size: 1.2rem;
+  color: var(--primary);
+  margin: 15px 0 10px;
+}
+
+.block-image {
   margin: 15px 0;
 }
-.iframe-lesson-wrapper iframe {
-  position: absolute;
-  top: 0; right: 0;
+.block-image img {
   width: 100%;
-  height: 100%;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.image-caption {
+  font-size: 0.85rem;
+  color: var(--gray);
+  text-align: center;
+  margin-top: 5px;
+}
+
+.block-image-text {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin: 15px 0;
+}
+.block-image-text .image-text-content {
+  flex: 1;
+  line-height: 1.9;
+}
+.block-image-text .image-text-image img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+@media (max-width: 640px) {
+  .block-image-text {
+    flex-direction: column;
+  }
+  .block-image-text .image-text-image img {
+    max-width: 100%;
+  }
+}
+
+/* Accordion */
+.block-accordion {
+  margin: 15px 0;
+}
+.accordion-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--gray-light);
+  cursor: pointer;
+  font-weight: 700;
+  transition: .2s;
+}
+.accordion-header:hover {
+  background: #e8edf2;
+}
+.accordion-icon {
+  transition: transform .2s;
+}
+.accordion-item.open .accordion-icon {
+  transform: rotate(180deg);
+}
+.accordion-body {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s ease, padding .3s ease;
+}
+.accordion-item.open .accordion-body {
+  padding: 12px 16px;
+  max-height: 500px;
+}
+
+/* Knowledge Check */
+.block-knowledge-check {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 15px 0;
+}
+.kc-question {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+.kc-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.kc-option {
+  padding: 10px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-family: 'Cairo';
+  font-weight: 600;
+  transition: .2s;
+  text-align: right;
+}
+.kc-option:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.kc-option:disabled {
+  cursor: not-allowed;
+}
+.kc-option.correct {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+.kc-option.wrong {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+.kc-feedback {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  display: none;
+}
+.kc-feedback.correct {
+  display: block;
+  background: var(--success-bg);
+  color: #065f46;
+}
+.kc-feedback.incorrect {
+  display: block;
+  background: var(--danger-bg);
+  color: #991b1b;
+}
+
+/* Timeline */
+.block-timeline {
+  margin: 15px 0;
+  position: relative;
+  padding-right: 30px;
+}
+.block-timeline::before {
+  content: '';
+  position: absolute;
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-light);
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 20px;
+}
+.timeline-dot {
+  position: absolute;
+  right: -22px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  background: var(--primary);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+.timeline-item:last-child .timeline-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.timeline-date {
+  font-size: 0.8rem;
+  color: var(--gray);
+  font-weight: 700;
+}
+.timeline-title {
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+.timeline-description {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Comparison Table */
+.block-comparison {
+  margin: 15px 0;
+  overflow-x: auto;
+}
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.comparison-table th {
+  background: var(--primary);
+  color: white;
+  padding: 10px 14px;
+  text-align: center;
+}
+.comparison-table td {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+.comparison-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+.comparison-table td:first-child {
+  font-weight: 700;
+  text-align: right;
+  background: var(--gray-light);
+}
+
+/* Summary */
+.block-summary {
+  background: var(--gold-light);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 15px 0;
+}
+.block-summary h3 {
+  color: #78350f;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+.block-summary ul {
+  padding-right: 20px;
+}
+.block-summary li {
+  color: #1e293b;
+  line-height: 1.8;
+}
+
+/* التنقل */
+.study-navigation {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 25px;
+  flex-wrap: wrap;
+}
+.study-navigation .btn {
+  padding: 12px 30px;
   border: none;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+  font-family: 'Cairo';
+}
+.btn-outline {
   background: transparent;
+  border: 2px solid var(--gray);
+  color: var(--gray);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-outline:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #b8941f);
+  color: #78350f;
+}
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(200,164,77,0.4);
 }
 
-.actions {
-  display: flex; gap: 15px; margin-top: 25px;
-  justify-content: center; flex-wrap: wrap;
+/* ===== الأخطاء والتحميل ===== */
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: var(--gray);
 }
-.btn {
-  padding: 12px 30px; border: none; border-radius: 30px;
-  font-weight: 700; font-size: 1rem; cursor: pointer;
-  transition: all 0.3s ease; text-decoration: none;
-  display: inline-block; font-family: 'Cairo';
-}
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(10,77,140,0.3); }
-.btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
-.btn-outline:hover { background: var(--primary); color: white; }
-.btn-success { background: #059669; color: white; }
-.btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(5,150,105,0.3); }
-
-.loading { text-align: center; padding: 50px; color: var(--gray); }
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid var(--primary);
@@ -173,14 +528,81 @@ body {
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
 }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.study-error {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray);
+}
+.study-error h3 {
+  color: var(--danger);
+  margin: 10px 0;
+}
+.study-error .btn {
+  margin-top: 15px;
+}
+
+.back-btn {
+  background: var(--gray);
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: 'Cairo';
+  margin-bottom: 15px;
+  transition: .2s;
+}
+.back-btn:hover {
+  background: #475569;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.actions .btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+  text-decoration: none;
+  font-family: 'Cairo';
+}
+.actions .btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+.actions .btn-outline:hover {
+  background: var(--primary);
+  color: white;
+}
+.actions .btn-success {
+  background: #059669;
+  color: white;
+}
+.actions .btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(5,150,105,0.3);
+}
 
 @media (max-width: 640px) {
   .container { padding: 15px; }
-  .header h1 { font-size: 1.4rem; }
-  .summary-box { font-size: 0.95rem; padding: 18px; }
+  .kc-options { grid-template-columns: 1fr; }
+  .study-title { font-size: 1.4rem; }
   .grid-cards { grid-template-columns: 1fr 1fr; }
-  .iframe-lesson-wrapper { padding-bottom: 150%; }
+  .block-image-text { flex-direction: column; }
 }
 </style>
 </head>
@@ -194,9 +616,9 @@ body {
       <button data-grade="p4" class="grade-btn active">رابع</button>
       <button data-grade="p5" class="grade-btn">خامس</button>
       <button data-grade="p6" class="grade-btn">سادس</button>
-      <button data-grade="m1" class="grade-btn">أول متوسط</button>
-      <button data-grade="m2" class="grade-btn">ثاني متوسط</button>
-      <button data-grade="m3" class="grade-btn">ثالث متوسط</button>
+      <button data-grade="m1" class="grade-btn">أول إعدادي</button>
+      <button data-grade="m2" class="grade-btn">ثاني إعدادي</button>
+      <button data-grade="m3" class="grade-btn">ثالث إعدادي</button>
     </div>
     <div class="subject-selector" id="subjectSelector">
       <button data-subject="arabic" class="subject-btn active">📖 لغة عربية</button>
@@ -206,6 +628,7 @@ body {
     </div>
   </div>
 
+  <!-- حاوية عرض الدروس -->
   <div id="contentArea">
     <div class="loading">
       <div class="spinner"></div>
@@ -221,7 +644,7 @@ body {
 
 <script>
 // ============================================================
-// محرك الشرح - النسخة المطورة (V5.1) مع إصلاح المسارات
+// محرك الشرح - النسخة المطورة (V5.0) تدعم الهيكل الجديد
 // ============================================================
 let currentGrade = 'p4';
 let currentSubject = 'arabic';
@@ -281,15 +704,15 @@ window.loadLessons = async function(unitId) {
             let icon = '📄';
             let subText = 'مراجعة سريعة';
             if (isHtml) {
-                badge = '<span class="badge-html">📄 تفاعلي</span>';
+                badge = '<span class="badge-html" style="display:inline-block;background:#0e7c86;color:white;font-size:0.6rem;padding:2px 10px;border-radius:30px;margin-top:5px;">📄 تفاعلي</span>';
                 icon = '🎨';
                 subText = 'محتوى غني بالصور والجداول';
             } else if (isReview) {
-                badge = '<span class="badge-review">📝 مراجعة</span>';
+                badge = '<span class="badge-review" style="display:inline-block;background:#9b1a2a;color:white;font-size:0.6rem;padding:2px 10px;border-radius:30px;margin-top:5px;">📝 مراجعة</span>';
                 icon = '📝';
                 subText = 'ملخص ومراجعة';
             } else {
-                badge = '<span class="badge-json">📝 نصي</span>';
+                badge = '<span class="badge-json" style="display:inline-block;background:#c9830a;color:white;font-size:0.6rem;padding:2px 10px;border-radius:30px;margin-top:5px;">📝 نصي</span>';
                 icon = '📄';
                 subText = 'شرح نصي وفيديو';
             }
@@ -308,68 +731,70 @@ window.loadLessons = async function(unitId) {
     }
 };
 
-// ===== تحميل محتوى الدرس (النسخة النهائية مع إصلاح المسار) =====
+// ===== تحميل محتوى الدرس (النسخة النهائية مع Study Engine) =====
 window.loadLessonContent = async function(unitId, lessonId) {
     currentUnitId = unitId;
     currentLessonId = lessonId;
     contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>⏳ جاري تحميل الدرس...</p></div>';
 
     try {
-        // 1. جلب محتوى الدرس
         const path = `../../data/study_data/${currentGrade}/${currentSubject}/${unitId}/${lessonId}.json`;
         const res = await fetch(path);
         if (!res.ok) throw new Error('الدرس غير موجود');
         const data = await res.json();
 
-        // 2. التحقق من وجود صفحة HTML مخصصة
+        // ===== التحقق من وجود صفحة HTML =====
         if (data.page) {
+            // استخدام iframe للدروس التفاعلية (HTML)
             let pagePath = data.page;
-
-            // ===== التعديل الأساسي: إصلاح المسار =====
-            // إذا كان المسار لا يحتوي على 'samaracadmy' (أي أنه مسار نسبي)،
-            // نضيف '/samaracadmy/' في البداية ونتأكد من عدم وجود شرطة مائلة زائدة
             if (!pagePath.includes('samaracadmy')) {
-                // إزالة أي شرطة مائلة من البداية
-                pagePath = pagePath.replace(/^\/+/, '');
-                // إضافة اسم المستودع
-                pagePath = '/samaracadmy/' + pagePath;
-            }
-            // إذا بدأ بـ '/' ولكن لا يحتوي على 'samaracadmy' (مثل '/pages/...')
-            else if (pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
+                pagePath = '/samaracadmy/' + pagePath.replace(/^\/+/, '');
+            } else if (pagePath.startsWith('/') && !pagePath.includes('samaracadmy')) {
                 pagePath = '/samaracadmy' + pagePath;
             }
 
-            // عرض المحتوى داخل iframe
             let html = `
                 <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
                 <h2 style="color:var(--primary);margin-bottom:10px;">📌 ${data.title || 'درس تفاعلي'}</h2>
-                <div class="iframe-lesson-wrapper">
-                    <iframe 
-                        src="${pagePath}" 
-                        loading="lazy"
-                        allowfullscreen
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                    ></iframe>
+                <div style="position:relative;width:100%;padding-bottom:120%;overflow:hidden;border-radius:16px;border:1px solid #e2e8f0;background:#0d1b2a;margin:15px 0;">
+                    <iframe src="${pagePath}" loading="lazy" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="position:absolute;top:0;right:0;width:100%;height:100%;border:none;background:transparent;"></iframe>
                 </div>
                 <p style="color:var(--gray);font-size:0.8rem;text-align:center;">📌 محتوى تفاعلي غني بالرسوم التوضيحية والجداول</p>
             `;
             contentArea.innerHTML = html;
-            return; // إنهاء الدالة هنا
+            return;
         }
 
-        // 3. العرض النصي التقليدي (JSON) - إذا لم يكن هناك حقل page
+        // ===== استخدام Study Engine للدروس الجديدة (Schema V2) =====
+        if (data.schemaVersion === '2.0') {
+            // استخدام Study Engine الجديد
+            const container = document.createElement('div');
+            container.id = 'lessonContainer';
+            contentArea.innerHTML = '';
+            contentArea.appendChild(container);
+            
+            // تحميل الدرس في Study Engine
+            await StudyEngine.loadLesson(path);
+            return;
+        }
+
+        // ===== العرض النصي التقليدي (JSON) - للتوافق مع الإصدارات القديمة =====
         let html = `
             <button class="back-btn" onclick="loadLessons('${unitId}')">⬅️ العودة للدروس</button>
             <h2 style="color:var(--primary);margin-bottom:20px;">📌 ${data.title || 'شرح الدرس'}</h2>
         `;
 
         if (data.videoUrl && data.videoUrl !== '') {
-            html += `<div class="video-container"><iframe src="${data.videoUrl}" allowfullscreen loading="lazy"></iframe></div>`;
+            html += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:16px;margin-bottom:25px;background:#1a1a2e;">
+                <iframe src="${data.videoUrl}" allowfullscreen loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
+            </div>`;
         }
 
         const summaryContent = data.summary || 'لم يتم إضافة محتوى بعد.';
-        html += `<div class="summary-box"><h3>📋 المحتوى التعليمي</h3><div>${summaryContent}</div></div>`;
-        
+        html += `<div style="background:var(--primary-light);padding:25px;border-radius:16px;border-right:5px solid var(--primary);text-align:right;line-height:1.9;font-size:1.05rem;color:#1a2e1a;">
+            <h3 style="color:var(--primary);margin-bottom:10px;font-weight:900;">📋 المحتوى التعليمي</h3>
+            <div>${summaryContent}</div>
+        </div>`;
         contentArea.innerHTML = html;
 
     } catch (e) {
