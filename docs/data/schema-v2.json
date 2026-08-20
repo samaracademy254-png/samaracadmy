@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0",
+  "description": "هيكل الدرس الموحد لسمر أكاديمي",
+  "lesson": {
+    "lessonId": "string (مثال: g5-social-u1-l1)",
+    "title": "string (عنوان الدرس)",
+    "subject": "string (social, science, arabic, math)",
+    "grade": "number (4,5,6,1,2,3)",
+    "unitId": "string (مثال: g5-social-u1)",
+    "metadata": {
+      "durationMinutes": "number (مدة الدرس بالدقائق)",
+      "difficulty": "string (easy, medium, hard)",
+      "language": "string (ar)",
+      "version": "number (رقم إصدار المحتوى)"
+    },
+    "learningObjectives": [
+      "string (أهداف التعلم)"
+    ],
+    "sections": [
+      {
+        "id": "string (معرف القسم)",
+        "title": "string (عنوان القسم)",
+        "blocks": [
+          {
+            "type": "string (نوع البلوك)",
+            "content": "object (محتوى البلوك حسب نوعه)"
+          }
+        ]
+      }
+    ],
+    "finalQuiz": {
+      "quizId": "string (معرف الاختبار النهائي)",
+      "count": "number (عدد الأسئلة)"
+    }
+  },
+  "blockTypes": {
+    "hero": "تمهيد القسم",
+    "text": "نص عادي",
+    "heading": "عنوان فرعي",
+    "image": "صورة مع وصف",
+    "imageText": "صورة ونص بجانب بعض",
+    "video": "فيديو",
+    "accordion": "قائمة مطوية",
+    "tabs": "علامات تبويب",
+    "flashcards": "بطاقات تعليمية",
+    "timeline": "خط زمني",
+    "comparison": "جدول مقارنة",
+    "hotspot": "خريطة تفاعلية",
+    "imageLabel": "صورة مع تسميات",
+    "knowledgeCheck": "سؤال قصير داخل الدرس",
+    "mcq": "اختيار من متعدد",
+    "trueFalse": "صواب/خطأ",
+    "matching": "مطابقة",
+    "summary": "ملخص القسم",
+    "finalQuiz": "اختبار نهائي"
+  }
+}
