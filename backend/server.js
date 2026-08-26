@@ -32,7 +32,6 @@ console.log('══════════════════════�
 //  إعدادات الأمان والوسائط
 // ============================================================
 
-// ثقة الوكيل (لـ Suga و Render)
 if (isProduction) {
   app.set('trust proxy', 1);
   console.log('✅ تم تفعيل trust proxy');
@@ -40,15 +39,15 @@ if (isProduction) {
 
 // CORS
 app.use(cors({
-  origin: isProduction 
-    ? ['https://samaracademy254-png.github.io', 'https://samar-academy.vercel.app'] 
+  origin: isProduction
+    ? ['https://samaracademy254-png.github.io', 'https://samar-academy.vercel.app']
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
-// Helmet
+// Helmet (تم تعطيل CSP مؤقتاً لتوافق الواجهة)
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -64,34 +63,61 @@ app.use((req, res, next) => {
   next();
 });
 
-// خدمة الملفات الثابتة (الواجهة الأمامية)
-const docsPath = path.join(process.cwd(), 'docs');
+// ============================================================
+//  خدمة الملفات الثابتة (باستخدام process.cwd())
+// ============================================================
+const projectRoot = process.cwd();
+const docsPath = path.join(projectRoot, 'docs');
 console.log(`📂 مسار الملفات الثابتة: ${docsPath}`);
+
+// التحقق من وجود المجلد والملفات
 if (fs.existsSync(docsPath)) {
-  app.use(express.static(docsPath));
   console.log('✅ مجلد docs موجود');
+  const indexFile = path.join(docsPath, 'index.html');
+  if (fs.existsSync(indexFile)) {
+    console.log(`✅ index.html موجود (${indexFile})`);
+  } else {
+    console.warn('⚠️ index.html غير موجود داخل docs!');
+  }
 } else {
-  console.warn('⚠️ مجلد docs غير موجود');
+  console.warn('⚠️ مجلد docs غير موجود!');
 }
 
-// مسار البداية
+// تقديم الملفات الثابتة
+app.use(express.static(docsPath));
+
+// ============================================================
+//  مسار الجذر - يعرض index.html
+// ============================================================
 app.get('/', (req, res) => {
-const indexPath = path.join(process.cwd(), 'docs', 'index.html');
+  const indexPath = path.join(docsPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('index.html غير موجود');
+    res.status(404).send('index.html غير موجود في المسار: ' + indexPath);
   }
 });
 
 // ============================================================
-//  دوال مساعدة (Helper Functions)
+//  نقطة توجيه شاملة لـ SPA (تقديم index.html لكل المسارات غير المعروفة)
+// ============================================================
+app.get('*', (req, res) => {
+  const indexPath = path.join(docsPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('index.html غير موجود (للطلب: ' + req.url + ')');
+  }
+});
+
+// ============================================================
+//  دوال مساعدة (Helper Functions) - تم تعديلها لاستخدام process.cwd()
 // ============================================================
 
 function safeReadJSON(filePath) {
   try {
     const resolvedPath = path.resolve(filePath);
-    const dataDir = path.resolve(__dirname, '../docs/data');
+    const dataDir = path.join(projectRoot, 'docs', 'data');
     if (!resolvedPath.startsWith(dataDir)) {
       return { error: 'مسار غير مصرح به' };
     }
@@ -164,7 +190,7 @@ app.post('/api/cms/add-lesson', (req, res) => {
   }
 });
 
-// 3. مسارات البيانات (Study, Quiz, Units)
+// 3. مسارات البيانات (Study, Quiz, Units) - تم إصلاح المسارات
 app.get('/api/study/:grade/:subject/:unit/:lesson', (req, res) => {
   const { grade, subject, unit, lesson } = req.params;
   const cleanGrade = sanitizeParam(grade);
@@ -172,7 +198,7 @@ app.get('/api/study/:grade/:subject/:unit/:lesson', (req, res) => {
   const cleanUnit = sanitizeParam(unit);
   const cleanLesson = sanitizeParam(lesson);
   
-  const filePath = path.join(__dirname, `../docs/data/study_data/${cleanGrade}/${cleanSubject}/${cleanUnit}/${cleanLesson}.json`);
+  const filePath = path.join(projectRoot, `docs/data/study_data/${cleanGrade}/${cleanSubject}/${cleanUnit}/${cleanLesson}.json`);
   const result = safeReadJSON(filePath);
   
   if (result.error) {
@@ -189,7 +215,7 @@ app.get('/api/quiz/:grade/:subject/:unit/:lesson', (req, res) => {
   const cleanUnit = sanitizeParam(unit);
   const cleanLesson = sanitizeParam(lesson);
   
-  const filePath = path.join(__dirname, `../docs/data/quiz_data/${cleanGrade}/${cleanSubject}/${cleanUnit}/${cleanLesson}.json`);
+  const filePath = path.join(projectRoot, `docs/data/quiz_data/${cleanGrade}/${cleanSubject}/${cleanUnit}/${cleanLesson}.json`);
   const result = safeReadJSON(filePath);
   
   if (result.error) {
@@ -200,7 +226,7 @@ app.get('/api/quiz/:grade/:subject/:unit/:lesson', (req, res) => {
 });
 
 app.get('/api/units', (req, res) => {
-  const filePath = path.join(__dirname, '../docs/data/units.json');
+  const filePath = path.join(projectRoot, 'docs/data/units.json');
   const result = safeReadJSON(filePath);
   
   if (result.error) {
@@ -357,7 +383,10 @@ app.get('/health', (req, res) => {
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
     adminRoutesLoaded: adminRoutesLoaded,
-    routesCount: app._router.stack.filter(r => r.route).length
+    routesCount: app._router.stack.filter(r => r.route).length,
+    docsPath: docsPath,
+    docsExists: fs.existsSync(docsPath),
+    indexExists: fs.existsSync(path.join(docsPath, 'index.html'))
   });
 });
 
@@ -395,6 +424,8 @@ const server = app.listen(PORT, () => {
   console.log(`📚 عدد الحجوزات: ${bookingService.getBookings().length}`);
   console.log(`🔑 ADMIN_PASSWORD موجود: ${!!process.env.ADMIN_PASSWORD}`);
   console.log(`📋 مسارات /api/admin محملة: ${adminRoutesLoaded ? '✅ نعم' : '❌ لا'}`);
+  console.log(`📂 مسار docs: ${docsPath}`);
+  console.log(`📄 index.html موجود: ${fs.existsSync(path.join(docsPath, 'index.html')) ? '✅' : '❌'}`);
   
   try {
     telegramService.initBot();
