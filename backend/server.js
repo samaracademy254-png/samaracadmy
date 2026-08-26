@@ -65,7 +65,7 @@ app.use((req, res, next) => {
 });
 
 // خدمة الملفات الثابتة (الواجهة الأمامية)
-const docsPath = path.join(__dirname, '../docs');
+const docsPath = path.join(process.cwd(), 'docs');
 console.log(`📂 مسار الملفات الثابتة: ${docsPath}`);
 if (fs.existsSync(docsPath)) {
   app.use(express.static(docsPath));
@@ -76,7 +76,7 @@ if (fs.existsSync(docsPath)) {
 
 // مسار البداية
 app.get('/', (req, res) => {
-  const indexPath = path.join(docsPath, 'index.html');
+const indexPath = path.join(process.cwd(), 'docs', 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
