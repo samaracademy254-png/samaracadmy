@@ -3,7 +3,7 @@
 
 const ApiService = (function() {
     // الرابط الأساسي للخادم (Suga)
-    const BASE_URL = 'https://w2rb3hs4r802-production-rll4xs02.europe-west1.suga.run';
+    const BASE_URL = 'https://lnbbsnxkkm0w-production-rll4xs02.europe-west1.suga.run';
 
     // ===== دوال أساسية =====
     function getToken() {
