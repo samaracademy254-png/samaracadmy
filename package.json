@@ -2,7 +2,7 @@
   "name": "samar-academy",
   "version": "1.0.0",
   "description": "سمر أكاديمي - منصة تعليمية مصرية",
-  "main": "backend/server.js",
+  "master": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js"
