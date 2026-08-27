@@ -1,23 +1,92 @@
-// backend/server.js
-// الخادم الرئيسي لسمر أكاديمي (V3.0) مع دعم البوت التفاعلي
+// ============================================================
+//  سمر أكاديمي - الخادم الرئيسي (V3.2)
+//  الإصدار المتين للتشغيل في بيئات الإنتاج (Suga/Render)
+// ============================================================
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const fs = require('fs');
-const path = require('path');
+// ===== [1] التقاط الأخطاء المبكرة (قبل أي شيء) =====
+process.on('uncaughtException', (err) => {
+  console.error('🔥 [uncaughtException]', err.stack);
+  process.exit(1); // خروج صريح لضمان ظهور الخطأ في سجلات Suga
+});
 
-// ============================================================
-//  استيراد الوحدات والخدمات
-// ============================================================
-const constants = require('./config/constants');
-const bookingService = require('./services/bookingService');
-const telegramService = require('./services/telegramService');
+process.on('unhandledRejection', (reason) => {
+  console.error('🔥 [unhandledRejection]', reason);
+  process.exit(1);
+});
 
-// ============================================================
-//  إعداد التطبيق
-// ============================================================
+// ===== [2] تحميل الوحدات مع طباعة الأخطاء (للتشخيص) =====
+console.log('⏳ جاري تحميل الوحدات الأساسية...');
+
+let dotenv, express, cors, helmet, fs, path;
+try {
+  dotenv = require('dotenv');
+  dotenv.config();
+  console.log('✅ dotenv تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل dotenv:', e.message);
+  process.exit(1);
+}
+
+try {
+  express = require('express');
+  console.log('✅ express تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل express:', e.message);
+  process.exit(1);
+}
+
+try {
+  cors = require('cors');
+  console.log('✅ cors تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل cors:', e.message);
+  process.exit(1);
+}
+
+try {
+  helmet = require('helmet');
+  console.log('✅ helmet تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل helmet:', e.message);
+  process.exit(1);
+}
+
+try {
+  fs = require('fs');
+  path = require('path');
+  console.log('✅ fs و path تم تحميلهما');
+} catch (e) {
+  console.error('❌ فشل تحميل fs/path:', e.message);
+  process.exit(1);
+}
+
+// ===== [3] تحميل الوحدات الداخلية مع الحماية =====
+let constants, bookingService, telegramService;
+try {
+  constants = require('./config/constants');
+  console.log('✅ constants تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل ./config/constants:', e.message);
+  process.exit(1);
+}
+
+try {
+  bookingService = require('./services/bookingService');
+  console.log('✅ bookingService تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل ./services/bookingService:', e.message);
+  process.exit(1);
+}
+
+try {
+  telegramService = require('./services/telegramService');
+  console.log('✅ telegramService تم تحميله');
+} catch (e) {
+  console.error('❌ فشل تحميل ./services/telegramService:', e.message);
+  process.exit(1);
+}
+
+// ===== [4] تهيئة التطبيق =====
 const app = express();
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -26,15 +95,13 @@ console.log('══════════════════════�
 console.log(`🚀 بدء تشغيل سمر أكاديمي (${isProduction ? 'إنتاج' : 'تطوير'})`);
 console.log(`📌 المنفذ: ${PORT}`);
 console.log(`📌 البيئة: ${process.env.NODE_ENV || 'development'}`);
+console.log(`📌 جذر المشروع: ${process.cwd()}`);
 console.log('═══════════════════════════════════════════════');
 
-// ============================================================
-//  إعدادات الأمان والوسائط
-// ============================================================
-
+// ===== [5] إعدادات الأمان والوسائط =====
 if (isProduction) {
   app.set('trust proxy', 1);
-  console.log('✅ تم تفعيل trust proxy');
+  console.log('✅ trust proxy مفعّل');
 }
 
 // CORS
@@ -46,74 +113,84 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+console.log('✅ CORS مهيأ');
 
-// Helmet (تم تعطيل CSP مؤقتاً لتوافق الواجهة)
+// Helmet (مع تعطيل CSP مؤقتًا لتوافق الواجهة)
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+console.log('✅ Helmet مهيأ');
 
 // معالجة JSON و URL-encoded
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+console.log('✅ JSON/URL-encoded parsers مهيأة');
 
-// تسجيل الطلبات
+// ===== [6] تسجيل الطلبات =====
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url}`);
   next();
 });
 
-// ============================================================
-//  خدمة الملفات الثابتة (باستخدام process.cwd())
-// ============================================================
+// ===== [7] خدمة الملفات الثابتة (مع تحقق قوي) =====
 const projectRoot = process.cwd();
 const docsPath = path.join(projectRoot, 'docs');
-console.log(`📂 مسار الملفات الثابتة: ${docsPath}`);
+const dataPath = path.join(projectRoot, 'docs', 'data');
 
-// التحقق من وجود المجلد والملفات
-if (fs.existsSync(docsPath)) {
-  console.log('✅ مجلد docs موجود');
-  const indexFile = path.join(docsPath, 'index.html');
-  if (fs.existsSync(indexFile)) {
-    console.log(`✅ index.html موجود (${indexFile})`);
-  } else {
-    console.warn('⚠️ index.html غير موجود داخل docs!');
-  }
+console.log(`📂 مسار docs: ${docsPath}`);
+
+// التحقق من وجود المجلدات
+if (!fs.existsSync(docsPath)) {
+  console.error(`❌ مجلد docs غير موجود في: ${docsPath}`);
+  console.error('   تأكد من أن مجلد docs موجود في جذر المشروع');
+  process.exit(1);
 } else {
-  console.warn('⚠️ مجلد docs غير موجود!');
+  console.log('✅ مجلد docs موجود');
+}
+
+if (!fs.existsSync(path.join(docsPath, 'index.html'))) {
+  console.warn('⚠️ index.html غير موجود داخل docs! قد تظهر صفحة 404');
+} else {
+  console.log('✅ index.html موجود');
 }
 
 // تقديم الملفات الثابتة
 app.use(express.static(docsPath));
+console.log('✅ خدمة الملفات الثابتة مفعلة');
 
-// ============================================================
-//  مسار الجذر - يعرض index.html
-// ============================================================
+// ===== [8] مسار الجذر =====
 app.get('/', (req, res) => {
   const indexPath = path.join(docsPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('index.html غير موجود في المسار: ' + indexPath);
+    res.status(404).send(`
+      <h1>⚠️ index.html غير موجود</h1>
+      <p>المسار المتوقع: ${indexPath}</p>
+      <p>تأكد من رفع مجلد docs إلى المستودع.</p>
+    `);
   }
 });
 
-// ============================================================
-//  نقطة توجيه شاملة لـ SPA (تقديم index.html لكل المسارات غير المعروفة)
-// ============================================================
+// ===== [9] نقطة توجيه شاملة لـ SPA (تسليم index.html لأي مسار غير معروف) =====
 app.get('*', (req, res) => {
+  // استثناء مسارات API (لن تمر هنا لأنها معرفة أعلاه)
   const indexPath = path.join(docsPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('index.html غير موجود (للطلب: ' + req.url + ')');
+    res.status(404).json({ error: 'index.html غير موجود' });
   }
 });
 
 // ============================================================
-//  دوال مساعدة (Helper Functions) - تم تعديلها لاستخدام process.cwd()
+//  [10] دوال مساعدة
 // ============================================================
 
+/**
+ * قراءة ملف JSON بأمان (مع منع الوصول خارج مجلد data)
+ */
 function safeReadJSON(filePath) {
   try {
     const resolvedPath = path.resolve(filePath);
@@ -136,7 +213,7 @@ function sanitizeParam(param) {
 }
 
 // ============================================================
-//  مسارات API العامة
+//  [11] مسارات API العامة
 // ============================================================
 
 console.log('🔍 تحميل مسارات API العامة...');
@@ -190,7 +267,7 @@ app.post('/api/cms/add-lesson', (req, res) => {
   }
 });
 
-// 3. مسارات البيانات (Study, Quiz, Units) - تم إصلاح المسارات
+// 3. مسارات البيانات (Study, Quiz, Units)
 app.get('/api/study/:grade/:subject/:unit/:lesson', (req, res) => {
   const { grade, subject, unit, lesson } = req.params;
   const cleanGrade = sanitizeParam(grade);
@@ -355,44 +432,44 @@ app.put('/api/booking/:id', (req, res) => {
 });
 
 // ============================================================
-//  مسارات لوحة التحكم (Admin Routes)
+//  [12] مسارات لوحة التحكم (Admin Routes)
 // ============================================================
+
 console.log('🔍 تحميل مسارات لوحة التحكم...');
 
 let adminRoutesLoaded = false;
 try {
   const adminRoutes = require('./routes/admin');
-  console.log('✅ تم استيراد adminRoutes بنجاح');
   app.use('/api/admin', adminRoutes);
   adminRoutesLoaded = true;
-  console.log('✅ تم تحميل مسارات لوحة التحكم (/api/admin) بنجاح');
+  console.log('✅ تم تحميل مسارات لوحة التحكم (/api/admin)');
 } catch (error) {
-  console.error('❌ فشل تحميل مسارات لوحة التحكم:');
-  console.error(error.message);
+  console.error('❌ فشل تحميل مسارات لوحة التحكم:', error.message);
 }
 
 // ============================================================
-//  فحص صحة السيرفر
+//  [13] نقطة التحقق الصحي (Health Check)
 // ============================================================
+
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK',
-    version: '3.0.0',
+    version: '3.2.0',
     timestamp: new Date().toISOString(),
     bookingsCount: bookingService.getBookings().length,
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
     adminRoutesLoaded: adminRoutesLoaded,
-    routesCount: app._router.stack.filter(r => r.route).length,
-    docsPath: docsPath,
     docsExists: fs.existsSync(docsPath),
-    indexExists: fs.existsSync(path.join(docsPath, 'index.html'))
+    indexExists: fs.existsSync(path.join(docsPath, 'index.html')),
+    dataExists: fs.existsSync(dataPath)
   });
 });
 
 // ============================================================
-//  معالج الأخطاء العام
+//  [14] معالج الأخطاء العام (يظهر بعد كل المسارات)
 // ============================================================
+
 app.use((err, req, res, next) => {
   console.error('❌ خطأ غير متوقع:', err.stack);
   res.status(500).json({ 
@@ -403,44 +480,36 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================================
-//  معالجات الأخطاء غير المتوقعة
+//  [15] تشغيل السيرفر
 // ============================================================
-process.on('uncaughtException', (err) => {
-  console.error('❌ uncaughtException:', err.message);
-  console.error(err.stack);
-  if (!isProduction) process.exit(1);
-});
 
-process.on('unhandledRejection', (reason) => {
-  console.error('❌ unhandledRejection:', reason);
-});
+console.log('⏳ جاري بدء تشغيل السيرفر...');
 
-// ============================================================
-//  تشغيل السيرفر
-// ============================================================
 const server = app.listen(PORT, () => {
   console.log('═══════════════════════════════════════════════');
-  console.log(`🚀 سمر أكاديمي يعمل على: http://localhost:${PORT}`);
+  console.log(`✅ سمر أكاديمي يعمل على: http://localhost:${PORT}`);
   console.log(`📚 عدد الحجوزات: ${bookingService.getBookings().length}`);
   console.log(`🔑 ADMIN_PASSWORD موجود: ${!!process.env.ADMIN_PASSWORD}`);
-  console.log(`📋 مسارات /api/admin محملة: ${adminRoutesLoaded ? '✅ نعم' : '❌ لا'}`);
-  console.log(`📂 مسار docs: ${docsPath}`);
-  console.log(`📄 index.html موجود: ${fs.existsSync(path.join(docsPath, 'index.html')) ? '✅' : '❌'}`);
+  console.log(`📋 مسارات /api/admin محملة: ${adminRoutesLoaded ? '✅' : '❌'}`);
+  console.log(`📂 مجلد docs: ${docsPath} (${fs.existsSync(docsPath) ? 'موجود ✅' : 'غير موجود ❌'})`);
+  console.log(`📄 index.html: ${fs.existsSync(path.join(docsPath, 'index.html')) ? 'موجود ✅' : 'غير موجود ❌'}`);
   
+  // محاولة بدء البوت (لا نوقف التشغيل إذا فشل)
   try {
     telegramService.initBot();
     console.log('✅ بوت تليجرام يعمل بنجاح');
   } catch (botError) {
-    console.error('❌ فشل بدء البوت:', botError.message);
+    console.warn('⚠️ فشل بدء البوت (لكن السيرفر يعمل):', botError.message);
   }
   console.log('═══════════════════════════════════════════════');
 });
 
 // ============================================================
-//  إغلاق آمن
+//  [16] إغلاق آمن
 // ============================================================
+
 process.on('SIGINT', () => {
-  console.log('🛑 جاري إيقاف السيرفر...');
+  console.log('🛑 جاري إيقاف السيرفر (SIGINT)...');
   server.close(() => {
     const bot = telegramService.getBot();
     if (bot) bot.stop('SIGINT');
@@ -452,3 +521,5 @@ process.on('SIGTERM', () => {
   console.log('🛑 جاري إيقاف السيرفر (SIGTERM)...');
   server.close(() => process.exit(0));
 });
+
+console.log('✅ تم تهيئة جميع المكونات بنجاح. في انتظار الطلبات...');
