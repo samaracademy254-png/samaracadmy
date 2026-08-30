@@ -1,12 +1,13 @@
 // ============================================================
-//  سمر أكاديمي - الخادم الرئيسي (V3.2)
+//  سمر أكاديمي - الخادم الرئيسي (V3.3)
 //  الإصدار المتين للتشغيل في بيئات الإنتاج (Suga/Render)
+//  تم إصلاح ترتيب المسارات لضمان عمل API بشكل صحيح
 // ============================================================
 
 // ===== [1] التقاط الأخطاء المبكرة (قبل أي شيء) =====
 process.on('uncaughtException', (err) => {
   console.error('🔥 [uncaughtException]', err.stack);
-  process.exit(1); // خروج صريح لضمان ظهور الخطأ في سجلات Suga
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
@@ -140,7 +141,6 @@ const dataPath = path.join(projectRoot, 'docs', 'data');
 
 console.log(`📂 مسار docs: ${docsPath}`);
 
-// التحقق من وجود المجلدات
 if (!fs.existsSync(docsPath)) {
   console.error(`❌ مجلد docs غير موجود في: ${docsPath}`);
   console.error('   تأكد من أن مجلد docs موجود في جذر المشروع');
@@ -159,7 +159,9 @@ if (!fs.existsSync(path.join(docsPath, 'index.html'))) {
 app.use(express.static(docsPath));
 console.log('✅ خدمة الملفات الثابتة مفعلة');
 
-// ===== [8] مسار الجذر =====
+// ============================================================
+//  [8] مسار الجذر (يجب أن يكون قبل أي شيء آخر)
+// ============================================================
 app.get('/', (req, res) => {
   const indexPath = path.join(docsPath, 'index.html');
   if (fs.existsSync(indexPath)) {
@@ -173,19 +175,8 @@ app.get('/', (req, res) => {
   }
 });
 
-// ===== [9] نقطة توجيه شاملة لـ SPA (تسليم index.html لأي مسار غير معروف) =====
-app.get('*', (req, res) => {
-  // استثناء مسارات API (لن تمر هنا لأنها معرفة أعلاه)
-  const indexPath = path.join(docsPath, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).json({ error: 'index.html غير موجود' });
-  }
-});
-
 // ============================================================
-//  [10] دوال مساعدة
+//  [9] دوال مساعدة
 // ============================================================
 
 /**
@@ -213,7 +204,7 @@ function sanitizeParam(param) {
 }
 
 // ============================================================
-//  [11] مسارات API العامة
+//  [10] مسارات API العامة (يجب أن تأتي قبل الـ catch-all)
 // ============================================================
 
 console.log('🔍 تحميل مسارات API العامة...');
@@ -432,7 +423,7 @@ app.put('/api/booking/:id', (req, res) => {
 });
 
 // ============================================================
-//  [12] مسارات لوحة التحكم (Admin Routes)
+//  [11] مسارات لوحة التحكم (Admin Routes)
 // ============================================================
 
 console.log('🔍 تحميل مسارات لوحة التحكم...');
@@ -448,13 +439,13 @@ try {
 }
 
 // ============================================================
-//  [13] نقطة التحقق الصحي (Health Check)
+//  [12] نقطة التحقق الصحي (Health Check)
 // ============================================================
 
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK',
-    version: '3.2.0',
+    version: '3.3.0',
     timestamp: new Date().toISOString(),
     bookingsCount: bookingService.getBookings().length,
     port: PORT,
@@ -464,6 +455,20 @@ app.get('/health', (req, res) => {
     indexExists: fs.existsSync(path.join(docsPath, 'index.html')),
     dataExists: fs.existsSync(dataPath)
   });
+});
+
+// ============================================================
+//  [13] نقطة التوجيه الشاملة لـ SPA (تسليم index.html لأي مسار غير معروف)
+//      يجب أن تأتي في آخر الملف، بعد جميع مسارات API و /health
+// ============================================================
+
+app.get('*', (req, res) => {
+  const indexPath = path.join(docsPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'index.html غير موجود' });
+  }
 });
 
 // ============================================================
