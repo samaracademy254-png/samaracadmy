@@ -519,7 +519,7 @@
     <!-- ===== Contact Bar ===== -->
     <div style="max-width:900px;margin:0 auto;">
         <div class="contact-bar">
-            <a href="https://wa.me/201120008704" target="_blank" class="whatsapp">📱 واتساب</a>
+            <a href="https://wa.me/201220434573" target="_blank" class="whatsapp">📱 واتساب</a>
             <a href="https://t.me/Edu_Samar_Academy_bot" target="_blank" class="telegram">🤖 تليجرام</a>
             <a href="pages/Contact/index.html" class="booking">📞 حجز درس خصوصي</a>
         </div>
@@ -540,118 +540,157 @@
     </footer>
 
     <script>
-        // ===== Wizard Logic =====
-        let state = { stage: '', grade: '', subject: '', unit: '', lesson: '' };
-        
-        // بيانات الصفوف (سيتم تحميلها من grades.json)
-        let gradesData = { primary: [], intermediate: [] };
-        
-        // تحميل بيانات الصفوف من الملف
+        // ============================================================
+        //  سمر أكاديمي - محرك اختيار الدروس (Wizard Engine)
+        //  الإصدار النهائي المُحسَّن - V3.2
+        // ============================================================
+
+        // ----- الحالة العامة -----
+        let state = {
+            stage: '',
+            grade: '',
+            subject: '',
+            unit: '',
+            lesson: '',
+            subjectKey: ''
+        };
+
+        // ----- بيانات الصفوف (تُحمَّل من الملف أو الاحتياطية) -----
+        let gradesData = {
+            primary: [],
+            intermediate: []
+        };
+
+        // ============================================================
+        //  [1] تحميل بيانات الصفوف
+        // ============================================================
+
+        /**
+         * محاولة جلب grades.json، مع استخدام بيانات احتياطية في حال الفشل
+         */
         async function loadGrades() {
             try {
-                const response = await fetch('data/grades.json');
-                if (response.ok) {
-                    gradesData = await response.json();
-                } else {
-                    // بيانات احتياطية في حال تعذر التحميل
-                    gradesData = {
-                        primary: [
-                            { id: 'p4', name: 'الصف الرابع الابتدائي' },
-                            { id: 'p5', name: 'الصف الخامس الابتدائي' },
-                            { id: 'p6', name: 'الصف السادس الابتدائي' }
-                        ],
-                        intermediate: [
-                            { id: 'm1', name: 'الصف الأول الإعدادي' },
-                            { id: 'm2', name: 'الصف الثاني الإعدادي' },
-                            { id: 'm3', name: 'الصف الثالث الإعدادي' }
-                        ]
-                    };
+                const response = await fetch('/data/grades.json');
+                if (!response.ok) {
+                    console.error('❌ فشل تحميل grades.json (HTTP ' + response.status + ')');
+                    setFallbackGrades();
+                    return;
                 }
+                gradesData = await response.json();
+                console.log('✅ تم تحميل grades.json بنجاح:', gradesData);
             } catch (e) {
-                console.warn('فشل تحميل grades.json، استخدام البيانات الاحتياطية');
-            }
-        }
-        
-        // تحميل الوحدات من ملف units.json
-        async function loadUnitsFromFile(gradeId, subjectName) {
-            try {
-                const response = await fetch('data/units.json');
-                if (!response.ok) return [];
-                const data = await response.json();
-                // البحث عن الصف والمادة
-                const gradeData = data[gradeId];
-                if (!gradeData) return [];
-                // العثور على المادة (بمطابقة الاسم أو المفتاح)
-                const subjectKey = Object.keys(gradeData).find(key => 
-                    key === subjectName || 
-                    gradeData[key]?.name === subjectName
-                );
-                if (!subjectKey) return [];
-                return gradeData[subjectKey]?.units || [];
-            } catch (e) {
-                console.warn('فشل تحميل units.json:', e);
-                return [];
+                console.warn('⚠️ فشل تحميل grades.json (خطأ شبكة):', e);
+                setFallbackGrades();
             }
         }
 
-        // تحميل الدروس من ملف lessons.json الخاص بالوحدة
-        async function loadLessonsFromFile(gradeId, subjectId, unitId) {
-            try {
-                const path = `data/study_data/${gradeId}/${subjectId}/${unitId}/lessons.json`;
-                const response = await fetch(path);
-                if (!response.ok) return [];
-                const data = await response.json();
-                return data.lessons || [];
-            } catch (e) {
-                console.warn('فشل تحميل lessons.json:', e);
-                return [];
-            }
+        /**
+         * تعيين بيانات احتياطية للصفوف في حال تعذر التحميل
+         */
+        function setFallbackGrades() {
+            gradesData = {
+                primary: [
+                    { id: 'p4', name: 'الصف الرابع الابتدائي' },
+                    { id: 'p5', name: 'الصف الخامس الابتدائي' },
+                    { id: 'p6', name: 'الصف السادس الابتدائي' }
+                ],
+                intermediate: [
+                    { id: 'm1', name: 'الصف الأول الإعدادي' },
+                    { id: 'm2', name: 'الصف الثاني الإعدادي' },
+                    { id: 'm3', name: 'الصف الثالث الإعدادي' }
+                ]
+            };
+            console.log('✅ تم تعيين البيانات الاحتياطية للصفوف');
         }
+
+        // ============================================================
+        //  [2] دوال التنقل بين الخطوات
+        // ============================================================
 
         function goToStep(step) {
             document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step' + step).classList.add('active');
+            const target = document.getElementById('step' + step);
+            if (target) target.classList.add('active');
         }
-        
+
+        // ============================================================
+        //  [3] اختيار المرحلة → عرض الصفوف
+        // ============================================================
+
         function selectStage(stage) {
+            console.log('📌 selectStage() → المرحلة:', stage);
+            console.log('📌 gradesData:', gradesData);
+
             state.stage = stage;
             const list = gradesData[stage] || [];
-            document.getElementById('gradesContainer').innerHTML = list.map(g => `
-                <div class="wizard-option" onclick="selectGrade('${g.id}')">
-                    <span class="emoji">📚</span> ${g.name}
-                </div>
-            `).join('');
-            goToStep(2);
-        }
-        
-        function selectGrade(gradeId) {
-            state.grade = gradeId;
-            // تحديد المواد بناءً على الصف (سيتم تحميلها من units.json)
-            // سنعرض مواد افتراضية ثم نحدّثها عند اختيار الوحدة
-            const subjects = ['اللغة العربية', 'الدراسات الاجتماعية', 'العلوم', 'الرياضيات'];
-            // بالنسبة للمرحلة الإعدادية بعض المواد مختلفة
-            if (gradeId.startsWith('m')) {
-                // إعدادي: دراسات + علوم فقط (كمثال)
-                document.getElementById('subjectsContainer').innerHTML = 
-                    ['الدراسات الاجتماعية', 'العلوم'].map(s => `
-                        <div class="wizard-option" onclick="selectSubject('${s}')">
-                            <span class="emoji">📖</span> ${s}
-                        </div>
-                    `).join('');
+            const container = document.getElementById('gradesContainer');
+
+            if (!container) {
+                console.error('❌ العنصر gradesContainer غير موجود في DOM!');
+                return;
+            }
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:20px;color:var(--gray);">
+                        ⚠️ لا توجد صفوف متاحة لهذه المرحلة
+                        <br><small>تأكد من تحميل البيانات</small>
+                    </div>
+                `;
+                console.warn('⚠️ لا توجد صفوف للمرحلة:', stage);
             } else {
-                document.getElementById('subjectsContainer').innerHTML = subjects.map(s => `
-                    <div class="wizard-option" onclick="selectSubject('${s}')">
-                        <span class="emoji">📖</span> ${s}
+                container.innerHTML = list.map(g => `
+                    <div class="wizard-option" onclick="selectGrade('${g.id}')">
+                        <span class="emoji">📚</span> ${g.name}
                     </div>
                 `).join('');
+                console.log('✅ تم عرض', list.length, 'صفوف للمرحلة', stage);
             }
+
+            goToStep(2);
+        }
+
+        // ============================================================
+        //  [4] اختيار الصف → عرض المواد
+        // ============================================================
+
+        function selectGrade(gradeId) {
+            console.log('📌 selectGrade() → الصف:', gradeId);
+            state.grade = gradeId;
+
+            // قائمة المواد (حسب المرحلة)
+            const subjects = ['اللغة العربية', 'الدراسات الاجتماعية', 'العلوم', 'الرياضيات'];
+            let filteredSubjects = subjects;
+
+            // للمرحلة الإعدادية: نعرض دراسات + علوم فقط (كمثال)
+            if (gradeId.startsWith('m')) {
+                filteredSubjects = ['الدراسات الاجتماعية', 'العلوم'];
+            }
+
+            const container = document.getElementById('subjectsContainer');
+            if (!container) {
+                console.error('❌ العنصر subjectsContainer غير موجود');
+                return;
+            }
+
+            container.innerHTML = filteredSubjects.map(s => `
+                <div class="wizard-option" onclick="selectSubject('${s}')">
+                    <span class="emoji">📖</span> ${s}
+                </div>
+            `).join('');
+
             goToStep(3);
         }
-        
+
+        // ============================================================
+        //  [5] اختيار المادة → عرض الوحدات
+        // ============================================================
+
         async function selectSubject(subject) {
+            console.log('📌 selectSubject() → المادة:', subject);
             state.subject = subject;
-            // تحميل الوحدات من ملف units.json
-            // نحتاج إلى معرف المفتاح الصحيح للمادة (arabic, social, science, math)
+
+            // خريطة أسماء المواد إلى المفاتيح المستخدمة في JSON
             const subjectMap = {
                 'اللغة العربية': 'arabic',
                 'الدراسات الاجتماعية': 'social',
@@ -659,74 +698,163 @@
                 'الرياضيات': 'math'
             };
             const subjectKey = subjectMap[subject] || subject;
-            
+            state.subjectKey = subjectKey;
+
             const units = await loadUnitsFromFile(state.grade, subjectKey);
-            if (units.length === 0) {
-                // إذا لم توجد وحدات، نعرض وحدات تجريبية
-                document.getElementById('unitsContainer').innerHTML = `
+            const container = document.getElementById('unitsContainer');
+
+            if (!container) {
+                console.error('❌ العنصر unitsContainer غير موجود');
+                return;
+            }
+
+            if (!units || units.length === 0) {
+                container.innerHTML = `
                     <div class="wizard-option" onclick="selectUnit('u1')">
                         <span class="emoji">📂</span> الوحدة الأولى: تجريبية
                     </div>
                 `;
+                console.warn('⚠️ لا توجد وحدات للمادة:', subject);
             } else {
-                document.getElementById('unitsContainer').innerHTML = units.map(u => `
+                container.innerHTML = units.map(u => `
                     <div class="wizard-option" onclick="selectUnit('${u.id}')">
                         <span class="emoji">📂</span> ${u.name}
                     </div>
                 `).join('');
+                console.log('✅ تم عرض', units.length, 'وحدات للمادة', subject);
             }
-            // تخزين المفتاح للاستخدام لاحقاً
-            state.subjectKey = subjectKey;
+
             goToStep(4);
         }
-        
+
+        // ============================================================
+        //  [6] اختيار الوحدة → عرض الدروس
+        // ============================================================
+
         async function selectUnit(unitId) {
+            console.log('📌 selectUnit() → الوحدة:', unitId);
             state.unit = unitId;
-            // تحميل الدروس من ملف lessons.json الخاص بالوحدة
+
             const subjectKey = state.subjectKey || 'arabic';
             const lessons = await loadLessonsFromFile(state.grade, subjectKey, unitId);
-            
-            if (lessons.length === 0) {
-                document.getElementById('lessonsContainer').innerHTML = `
+            const container = document.getElementById('lessonsContainer');
+
+            if (!container) {
+                console.error('❌ العنصر lessonsContainer غير موجود');
+                return;
+            }
+
+            if (!lessons || lessons.length === 0) {
+                container.innerHTML = `
                     <div class="wizard-option" onclick="selectLesson('l1')">
                         <span class="emoji">📝</span> الدرس الأول: تجريبي
                     </div>
                 `;
+                console.warn('⚠️ لا توجد دروس للوحدة:', unitId);
             } else {
-                document.getElementById('lessonsContainer').innerHTML = lessons.map(l => `
+                container.innerHTML = lessons.map(l => `
                     <div class="wizard-option" onclick="selectLesson('${l.id}')">
                         <span class="emoji">📝</span> ${l.name}
                     </div>
                 `).join('');
+                console.log('✅ تم عرض', lessons.length, 'دروس للوحدة', unitId);
             }
+
             goToStep(5);
         }
-        
+
+        // ============================================================
+        //  [7] اختيار الدرس → عرض ملخص والروابط
+        // ============================================================
+
         function selectLesson(lessonId) {
+            console.log('📌 selectLesson() → الدرس:', lessonId);
             state.lesson = lessonId;
+
             const gradeName = getGradeName(state.grade);
             const subjectName = state.subject;
             const unitName = document.querySelector('#unitsContainer .selected')?.textContent?.trim() || state.unit;
-            document.getElementById('selectionSummary').textContent = 
+
+            document.getElementById('selectionSummary').textContent =
                 `الصف: ${gradeName} | المادة: ${subjectName} | الوحدة: ${unitName} | الدرس: ${lessonId}`;
-            
-            // ===== التعديل المطلوب: تحديث الروابط الجديدة =====
-            // نمرر فقط grade و subject، لأن محركات الشرح والاختبار ستقرأ الوحدات والدروس من ملفاتها
-            document.getElementById('startStudyBtn').href = 
-                `pages/Study/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
-            document.getElementById('startQuizBtn').href = 
-                `pages/Home/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
-            
+
+            // تحديث روابط الانتقال إلى الشرح والاختبار
+            const studyLink = document.getElementById('startStudyBtn');
+            const quizLink = document.getElementById('startQuizBtn');
+
+            if (studyLink) {
+                studyLink.href = `pages/Study/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
+            }
+            if (quizLink) {
+                quizLink.href = `pages/Home/index.html?grade=${state.grade}&subject=${state.subjectKey || 'arabic'}`;
+            }
+
             goToStep(6);
         }
-        
+
+        // ============================================================
+        //  [8] دوال مساعدة لجلب البيانات من الخادم
+        // ============================================================
+
+        /**
+         * جلب قائمة الوحدات من ملف units.json
+         */
+        async function loadUnitsFromFile(gradeId, subjectKey) {
+            try {
+                const response = await fetch('/data/units.json');
+                if (!response.ok) {
+                    console.warn('⚠️ فشل تحميل units.json (HTTP ' + response.status + ')');
+                    return [];
+                }
+                const data = await response.json();
+                const gradeData = data[gradeId];
+                if (!gradeData) return [];
+                const subjectData = gradeData[subjectKey];
+                if (!subjectData) return [];
+                return subjectData.units || [];
+            } catch (e) {
+                console.warn('⚠️ فشل تحميل units.json:', e);
+                return [];
+            }
+        }
+
+        /**
+         * جلب قائمة الدروس من ملف lessons.json الخاص بالوحدة
+         */
+        async function loadLessonsFromFile(gradeId, subjectKey, unitId) {
+            try {
+                const path = `/data/study_data/${gradeId}/${subjectKey}/${unitId}/lessons.json`;
+                const response = await fetch(path);
+                if (!response.ok) {
+                    console.warn('⚠️ فشل تحميل lessons.json (HTTP ' + response.status + ')');
+                    return [];
+                }
+                const data = await response.json();
+                return data.lessons || [];
+            } catch (e) {
+                console.warn('⚠️ فشل تحميل lessons.json:', e);
+                return [];
+            }
+        }
+
+        // ============================================================
+        //  [9] دوال مساعدة عامة
+        // ============================================================
+
+        /**
+         * الحصول على اسم الصف من المعرف
+         */
         function getGradeName(gradeId) {
             const allGrades = [...gradesData.primary, ...gradesData.intermediate];
             const found = allGrades.find(g => g.id === gradeId);
             return found ? found.name : gradeId;
         }
-        
-        // ===== Navbar Hamburger =====
+
+        // ============================================================
+        //  [10] تهيئة الصفحة (عند التحميل)
+        // ============================================================
+
+        // ----- زر القائمة (هامبرغر) -----
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         if (hamburgerBtn) {
             hamburgerBtn.addEventListener('click', () => {
@@ -734,20 +862,23 @@
                 if (navLinks) navLinks.classList.toggle('open');
             });
         }
-        
-        // ===== Smooth Scroll =====
-        document.querySelector('.btn-hero').addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('wizard').scrollIntoView({ behavior: 'smooth' });
-        });
 
-        // ===== تهيئة البيانات عند تحميل الصفحة =====
+        // ----- التمرير السلس لزر البطل -----
+        const heroBtn = document.querySelector('.btn-hero');
+        if (heroBtn) {
+            heroBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const wizard = document.getElementById('wizard');
+                if (wizard) wizard.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // ----- تحميل البيانات عند بدء الصفحة -----
         (async function init() {
+            console.log('🚀 بدء تهيئة سمر أكاديمي...');
             await loadGrades();
-            // يمكن إضافة أي تهيئة إضافية هنا
+            console.log('✅ التهيئة اكتملت. جاهز لاختيار المسار.');
         })();
     </script>
 </body>
 </html>
-
-
